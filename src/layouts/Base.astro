@@ -1,0 +1,64 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  wide?: boolean;
+}
+
+// Support usage as a markdown layout (frontmatter prop) as well as a component.
+const fm = Astro.props.frontmatter ?? Astro.props;
+const { title, description, wide = false } = fm as Props;
+const siteName = 'OPM Games';
+const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const navItems = [
+  { href: '/', label: 'Home', match: (p: string) => p === '/' },
+  { href: '/blog', label: 'Blog', match: (p: string) => p.startsWith('/blog') },
+  { href: '/gallery', label: 'Gallery', match: (p: string) => p.startsWith('/gallery') },
+  { href: '/about', label: 'About', match: (p: string) => p.startsWith('/about') },
+];
+const path = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+    <link rel="alternate" type="application/rss+xml" title={siteName} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header__inner">
+          <a class="site-title" href="/">{siteName}</a>
+          <nav class="site-nav" aria-label="Main">
+            {navItems.map((item) => (
+              <a href={item.href} aria-current={item.match(path) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </header>
+      <main class:list={['site-main', { 'site-main--wide': wide }]}>
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <div class="site-footer__inner">
+          <span>© {new Date().getFullYear()} {siteName}</span>
+          {' · '}
+          <a href="/rss.xml">RSS</a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

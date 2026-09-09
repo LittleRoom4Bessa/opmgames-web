@@ -1,0 +1,86 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, formatDate } from '../../lib/content';
+
+const posts = await getPosts();
+---
+
+<Base title="Blog" description="Devlogs and essays on making games.">
+  <h1>Blog</h1>
+  <p class="meta">Devlogs from the trenches, and longer essays.</p>
+
+  <div class="filter-bar" role="group" aria-label="Filter by category">
+    {['all', 'devlog', 'essay'].map((c) => (
+      <button class="filter-btn" data-filter={c} aria-pressed={c === 'all'}>
+        {c === 'all' ? 'All' : c === 'devlog' ? 'Devlogs' : 'Essays'}
+      </button>
+    ))}
+  </div>
+
+  <ul class="card-list" id="post-list">
+    {posts.map((post) => (
+      <li data-category={post.data.category}>
+        <article>
+          <h2 style="margin-top: 0">
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          </h2>
+          <p class="meta">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {formatDate(post.data.pubDate)}
+            </time>
+            {' · '}
+            <span class="badge">{post.data.category}</span>
+          </p>
+          <p>{post.data.description}</p>
+          {post.data.tags.length > 0 && (
+            <ul class="tag-list">
+              {post.data.tags.map((tag) => (
+                <li><a href={`/tags/${tag}/`}>#{tag}</a></li>
+              ))}
+            </ul>
+          )}
+        </article>
+      </li>
+    ))}
+  </ul>
+
+  {posts.length === 0 && <p>No posts yet. Check back soon.</p>}
+</Base>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const items = document.querySelectorAll<HTMLElement>('#post-list > li');
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      items.forEach((item) => {
+        item.style.display =
+          filter === 'all' || item.dataset.category === filter ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<style>
+  .filter-bar {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-6) 0;
+  }
+  .filter-btn {
+    font: inherit;
+    font-size: var(--text-sm);
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+  .filter-btn[aria-pressed='true'] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-contrast);
+  }
+</style>

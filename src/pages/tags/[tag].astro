@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, getAlbums, formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const [posts, albums] = await Promise.all([getPosts(), getAlbums()]);
+  const tags = new Set<string>();
+  posts.forEach((p) => p.data.tags.forEach((t) => tags.add(t)));
+  albums.forEach((a) => a.data.tags.forEach((t) => tags.add(t)));
+  return [...tags].map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.filter((p) => p.data.tags.includes(tag)),
+      albums: albums.filter((a) => a.data.tags.includes(tag)),
+    },
+  }));
+}
+
+const { tag, posts, albums } = Astro.props;
+---
+
+<Base title={`#${tag}`} description={`Posts and albums tagged "${tag}".`}>
+  <h1>#{tag}</h1>
+
+  {posts.length > 0 && (
+    <section>
+      <h2>Blog posts</h2>
+      <ul class="card-list">
+        {posts.map((post) => (
+          <li>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+            {' '}
+            <span class="meta">
+              <time datetime={post.data.pubDate.toISOString()}>
+                {formatDate(post.data.pubDate)}
+              </time>
+              {' · '}
+              <span class="badge">{post.data.category}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {albums.length > 0 && (
+    <section>
+      <h2>Albums</h2>
+      <ul class="card-list">
+        {albums.map((album) => (
+          <li>
+            <a href={`/gallery/${album.id}/`}>{album.data.title}</a>
+            {' '}
+            <span class="meta">
+              <time datetime={album.data.date.toISOString()}>
+                {formatDate(album.data.date)}
+              </time>
+              {' · '}
+              <span class="badge">album</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</Base>

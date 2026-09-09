@@ -1,0 +1,68 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import { getAlbums, formatDate } from '../../lib/content';
+
+const albums = await getAlbums();
+---
+
+<Base title="Gallery" description="Photo albums." wide>
+  <h1>Gallery</h1>
+  <p class="meta">Photo collections, with the stories behind them.</p>
+
+  {albums.length === 0 ? (
+    <p>No albums yet. Check back soon.</p>
+  ) : (
+    <ul class="album-grid">
+      {albums.map((album) => (
+        <li>
+          <a href={`/gallery/${album.id}/`} class="album-card">
+            <Image
+              src={album.data.cover}
+              alt={album.data.title}
+              widths={[320, 640]}
+              sizes="(max-width: 640px) 100vw, 320px"
+              loading="lazy"
+            />
+            <span class="album-card__title">{album.data.title}</span>
+            <span class="meta">
+              <time datetime={album.data.date.toISOString()}>
+                {formatDate(album.data.date)}
+              </time>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</Base>
+
+<style>
+  .album-grid {
+    list-style: none;
+    margin: var(--space-6) 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-6);
+  }
+  .album-card {
+    display: block;
+    color: var(--color-text);
+  }
+  .album-card:hover {
+    text-decoration: none;
+  }
+  .album-card img {
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    width: 100%;
+  }
+  .album-card__title {
+    display: block;
+    font-weight: 600;
+    margin-top: var(--space-2);
+  }
+</style>

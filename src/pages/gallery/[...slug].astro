@@ -1,0 +1,178 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getAlbums, formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const albums = await getAlbums();
+  return albums.map((album) => ({ params: { slug: album.id }, props: { album } }));
+}
+
+const { album } = Astro.props;
+const { Content } = await render(album);
+
+// Pre-generate large versions for the lightbox.
+const fullSize = await Promise.all(
+  album.data.photos.map((p) =>
+    getImage({ src: p.src, width: 1600, format: 'webp' })
+  )
+);
+---
+
+<Base title={album.data.title} description={album.data.description} wide>
+  <article>
+    <header>
+      <h1>{album.data.title}</h1>
+      <p class="meta">
+        <time datetime={album.data.date.toISOString()}>
+          {formatDate(album.data.date)}
+        </time>
+      </p>
+      {album.data.tags.length > 0 && (
+        <ul class="tag-list">
+          {album.data.tags.map((tag) => (
+            <li><a href={`/tags/${tag}/`}>#{tag}</a></li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    <div class="prose album-intro">
+      <Content />
+    </div>
+
+    <ul class="photo-grid">
+      {album.data.photos.map((photo, i) => (
+        <li>
+          <figure>
+            <button
+              class="photo-btn"
+              data-index={i}
+              data-full={fullSize[i].src}
+              data-alt={photo.alt}
+              aria-label={`View full size: ${photo.alt}`}
+            >
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                widths={[320, 640, 960]}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+                loading={i < 3 ? 'eager' : 'lazy'}
+              />
+            </button>
+            {photo.caption && <figcaption class="meta">{photo.caption}</figcaption>}
+          </figure>
+        </li>
+      ))}
+    </ul>
+  </article>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+    <button class="lightbox__close" aria-label="Close">×</button>
+    <button class="lightbox__prev" aria-label="Previous photo">‹</button>
+    <img class="lightbox__img" alt="" />
+    <button class="lightbox__next" aria-label="Next photo">›</button>
+  </div>
+</Base>
+
+<script>
+  const lightbox = document.getElementById('lightbox')!;
+  const img = lightbox.querySelector<HTMLImageElement>('.lightbox__img')!;
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('.photo-btn'));
+  let current = 0;
+
+  function show(index: number) {
+    current = (index + buttons.length) % buttons.length;
+    const btn = buttons[current];
+    img.src = btn.dataset.full!;
+    img.alt = btn.dataset.alt ?? '';
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    lightbox.hidden = true;
+    img.removeAttribute('src');
+    document.body.style.overflow = '';
+  }
+
+  buttons.forEach((btn, i) => btn.addEventListener('click', () => show(i)));
+  lightbox.querySelector('.lightbox__close')!.addEventListener('click', close);
+  lightbox.querySelector('.lightbox__prev')!.addEventListener('click', () => show(current - 1));
+  lightbox.querySelector('.lightbox__next')!.addEventListener('click', () => show(current + 1));
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+  });
+</script>
+
+<style>
+  .album-intro {
+    max-width: var(--content-width);
+  }
+  .photo-grid {
+    list-style: none;
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+  .photo-grid figure {
+    margin: 0;
+  }
+  .photo-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: none;
+    cursor: zoom-in;
+    overflow: hidden;
+  }
+  .photo-btn img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  figcaption {
+    margin-top: var(--space-2);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox__img {
+    max-width: 92vw;
+    max-height: 90vh;
+    object-fit: contain;
+  }
+  .lightbox button {
+    position: absolute;
+    font-size: 2rem;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-4);
+    line-height: 1;
+  }
+  .lightbox__close { top: var(--space-4); right: var(--space-4); }
+  .lightbox__prev { left: var(--space-2); top: 50%; transform: translateY(-50%); }
+  .lightbox__next { right: var(--space-2); top: 50%; transform: translateY(-50%); }
+</style>
