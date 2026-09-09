@@ -42,7 +42,7 @@
 
 - [x] 7.1 Add `.github/workflows/deploy.yml`: build on push to `main`, upload `dist/` artifact, deploy to GitHub Pages
 - [x] 7.2 Add `public/CNAME` with `opmgames.com`; configure repo Pages settings (source: GitHub Actions)
-- [ ] 7.3 Configure DNS at registrar: apex A records to GitHub's 4 IPs, `www` CNAME to `<user>.github.io`; verify `www` redirects to apex
+- [x] 7.3 Configure DNS at registrar: apex A records to GitHub's 4 IPs, `www` CNAME to `<user>.github.io`; verify `www` redirects to apex
 - [ ] 7.4 After certificate issuance, enable "Enforce HTTPS"; verify `https://opmgames.com` loads and sitemap/RSS are reachable
 
 ## 8. Polish & acceptance
