@@ -3,13 +3,13 @@
 ## 1. Workflow
 
 - [x] 1.1 Update `.github/workflows/deploy.yml`: trigger on `push: [release]` + `pull_request: [release]` (keep `workflow_dispatch`); gate deploy job with `if: github.event_name != 'pull_request'`; keep build job name as `build` (referenced by branch protection)
-- [ ] 1.2 Push updated workflow to `main` and confirm no deployment triggers from `main`
+- [x] 1.2 Push updated workflow to `main` and confirm no deployment triggers from `main`
 
 ## 2. Release branch & protection
 
-- [ ] 2.1 Create `release` branch from `main` and push to origin
-- [ ] 2.2 Apply branch protection on `release` via GitHub API: require PR (0 approvals), require `build` status check (strict: false), no force pushes, no deletions, admins not enforced (escape hatch)
-- [ ] 2.3 Verify protection is active (direct push to `release` rejected; settings show required check `build`)
+- [x] 2.1 Create `release` branch from `main` and push to origin
+- [x] 2.2 Apply branch protection on `release` via GitHub API: require PR (0 approvals), require `build` status check (strict: false), no force pushes, no deletions, admins not enforced (escape hatch)
+- [x] 2.3 Verify protection is active (direct push to `release` rejected; settings show required check `build`)
 
 ## 3. End-to-end verification
 
