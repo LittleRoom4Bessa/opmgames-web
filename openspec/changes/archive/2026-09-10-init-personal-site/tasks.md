@@ -49,4 +49,4 @@
 
 - [x] 8.1 Cross-page consistency check against baseline tokens (palette, font stack, spacing uniform)
 - [x] 8.2 Validate sitemap.xml contains all public pages and excludes drafts; validate RSS feed in a reader
-- [ ] 8.3 Owner review pass on real content; replace sample/placeholder content as needed
+- [ ] 8.3 Owner review pass on real content; replace sample/placeholder content as needed — **DEFERRED to a future change** (owner fills real content)
