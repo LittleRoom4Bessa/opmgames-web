@@ -27,5 +27,5 @@ npm run preview  # preview production build
 ```bash
 # publish what's on main:
 gh pr create --base release --head main --title "release: <what's new>"
-gh pr merge --squash
+gh pr merge --merge   # NOT --squash: squash diverges release/main history
 ```
