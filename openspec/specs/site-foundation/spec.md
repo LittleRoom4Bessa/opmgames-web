@@ -59,12 +59,29 @@ The site SHALL emit a `sitemap.xml` including all non-draft pages, set a canonic
 
 ### Requirement: Deployment pipeline
 
-The site SHALL deploy automatically to GitHub Pages via a GitHub Actions workflow on every push to `main`, and SHALL be served at the custom domain `https://opmgames.com` (with `www` redirecting to apex) over HTTPS.
+The site SHALL deploy automatically to GitHub Pages via a GitHub Actions workflow on every push to the `release` branch, and SHALL be served at the custom domain `https://opmgames.com` (with `www` redirecting to apex) over HTTPS. Pushes to the `main` branch SHALL NOT trigger deployment; `main` is the development stream and `release` is the production stream.
 
-#### Scenario: Deploy on push
+The `release` branch SHALL be protected: direct pushes are disallowed, and changes MUST reach `release` through a pull request on which the workflow's `build` job has run and passed. Pull requests targeting `release` SHALL run the build as a required status check without deploying.
+
+#### Scenario: Deploy on push to release
+
+- **WHEN** a commit is pushed to (or a pull request is merged into) `release`
+- **THEN** the workflow builds the site and deploys it to GitHub Pages without manual steps
+
+#### Scenario: No deploy from main
 
 - **WHEN** a commit is pushed to `main`
-- **THEN** the workflow builds the site and deploys it to GitHub Pages without manual steps
+- **THEN** no deployment to production occurs
+
+#### Scenario: PR gate on release
+
+- **WHEN** a pull request targeting `release` is opened or updated
+- **THEN** the `build` job runs as a status check and merging is blocked until it passes
+
+#### Scenario: Direct push to release blocked
+
+- **WHEN** a non-bypass user attempts to push directly to `release`
+- **THEN** GitHub rejects the push
 
 #### Scenario: Custom domain
 

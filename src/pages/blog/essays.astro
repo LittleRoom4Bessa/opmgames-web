@@ -1,0 +1,14 @@
+---
+import Base from "../../layouts/Base.astro";
+import BlogIndex from "../../components/BlogIndex.astro";
+import { getPosts } from "../../lib/content";
+
+const all = await getPosts();
+const posts = all.filter((p) => p.data.category === "essay");
+---
+
+<Base title="Essays" description="Essays — longer thinking from the workbench.">
+  <section class="page">
+    <BlogIndex posts={posts} active="essay" allIds={all.map((p) => p.id)} />
+  </section>
+</Base>

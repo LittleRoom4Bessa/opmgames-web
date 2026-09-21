@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Material Lab v2 — type as craft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&family=Cinzel:wght@600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-deep:#eae4d5; --ink:#1c1917; --ink-soft:#57534b;
+    --accent:#ff4d00;
+    --blueprint:#1e3fae; --blueprint-line:rgba(255,255,255,.14); --bp-ink:#eef1ff; --bp-dim:#b9c8ff;
+    --darkroom:#0e0d0c; --darkroom-ink:#e8e4da;
+    --metal-hi:#e9e9e7; --metal-mid:#cacac8; --metal-lo:#a8a8a5;
+    --mono:'IBM Plex Mono',monospace;
+    --serif:'Instrument Serif',serif;
+    --book:'Newsreader',serif;
+    --sans:'Instrument Sans',sans-serif;
+    --grot:'Archivo',sans-serif;
+    --roman:'Cinzel',serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);font-size:17px;line-height:1.65;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ── 全站颗粒：实验室的空气 ─────────────────── */
+  .grain{
+    position:fixed;inset:0;z-index:200;pointer-events:none;opacity:.55;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.34'/%3E%3C/svg%3E");
+  }
+
+  /* ── 玻璃 Dock ─────────────────────────────── */
+  .dock{
+    position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:100;
+    display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:22px;
+    background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(255,255,255,.28));
+    -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.65);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8), inset 0 -1px 0 rgba(0,0,0,.04),
+      0 12px 32px rgba(28,25,23,.16), 0 2px 8px rgba(28,25,23,.08);
+  }
+  .dock-item{
+    position:relative;width:52px;height:52px;border-radius:14px;border:0;cursor:pointer;
+    display:grid;place-items:center;background:transparent;text-decoration:none;color:var(--ink);
+    transition:transform .12s ease-out, background .2s;transform-origin:left center;
+  }
+  .dock-item:hover{background:rgba(255,255,255,.45)}
+  .dock-item .swatch{width:26px;height:26px;border-radius:8px;display:block;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 1px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.2)}
+  .sw-paper{background:linear-gradient(145deg,#f6f2e8,#e6dfcd)}
+  .sw-blueprint{background:
+    repeating-linear-gradient(0deg,transparent 0 4px,rgba(255,255,255,.35) 4px 5px),
+    repeating-linear-gradient(90deg,transparent 0 4px,rgba(255,255,255,.35) 4px 5px),#1e3fae}
+  .sw-dark{background:radial-gradient(circle at 35% 30%,#2a2926,#0e0d0c 70%)}
+  .sw-metal{background:linear-gradient(135deg,#ececea,#b3b3b0 45%,#dededa 60%,#a3a3a0)}
+  .dock-item .tag{
+    position:absolute;left:calc(100% + 14px);top:50%;transform:translateY(-50%) translateX(-6px);
+    font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--ink);color:var(--paper);padding:5px 9px;border-radius:6px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+  .dock-item .tag::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);
+    border:4px solid transparent;border-right-color:var(--ink)}
+  .dock-item:hover .tag{opacity:1;transform:translateY(-50%) translateX(0)}
+  .dock-item.active::after{content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+    width:4px;height:22px;border-radius:2px;background:var(--accent)}
+  .dock-sep{height:1px;margin:4px 8px;background:rgba(28,25,23,.14)}
+
+  /* ── 版面骨架 ──────────────────────────────── */
+  main{padding-left:96px}
+  section{min-height:100vh;padding:13vh 8vw;position:relative;overflow:hidden}
+
+  /* 标本编号标签：实验室的统一声部，全站同一规格 */
+  .mtl-tag{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;display:inline-flex;align-items:center;gap:8px;margin-bottom:32px}
+  .mtl-tag::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor;opacity:.55}
+
+  /* ═══ MTL-01 纸 · 活版书页 ═══════════════════════
+     工艺：凸版印刷。字体必须有"油墨吃进纸纤维"的文学感。
+     Display: Instrument Serif 400 —— 大字不重，靠意大利斜体出声
+     Body:    Newsreader 400 —— 书页正文字体，光学尺寸
+  ═══════════════════════════════════════════════ */
+  .s-paper{
+    background:
+      radial-gradient(1200px 500px at 80% -10%,rgba(255,255,255,.7),transparent 60%),
+      linear-gradient(var(--paper),var(--paper-deep));
+  }
+  .s-paper::after{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.012 0.05' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E")}
+  .s-paper .mtl-tag{color:var(--ink-soft)}
+  .s-paper h1{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(56px,7.6vw,112px);line-height:.97;letter-spacing:-.015em;color:var(--ink);
+  }
+  .s-paper h1 em{font-style:italic;letter-spacing:0}
+  .s-paper .lede{
+    font-family:var(--book);font-weight:400;font-size:19px;line-height:1.78;
+    max-width:54ch;margin-top:36px;color:#33302a;
+  }
+  .s-paper .lede::first-letter{ /* 首字下沉：书页才有的特权 */
+    font-family:var(--serif);font-size:3.2em;float:left;line-height:.8;
+    padding:.06em .14em 0 0;color:var(--ink);
+  }
+  .s-paper .folio{ /* 页码/书眉，书页逻辑 */
+    position:absolute;bottom:5vh;left:8vw;
+    font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-soft);
+  }
+  .stamp{
+    position:absolute;right:8vw;top:13vh;transform:rotate(8deg);
+    font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.2em;color:var(--accent);
+    border:2px solid var(--accent);border-radius:6px;padding:8px 14px;opacity:.85;
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='0.6' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='0.6' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+  }
+
+  /* ═══ MTL-02 蓝图 · 制图台 ═══════════════════════
+     工艺：氨熏晒图。蓝图上没有"字体设计"，只有制图员的工整单线字。
+     全板等宽：IBM Plex Mono —— 标题用 500 大写字距撑开，正文 400 收紧。
+     标题被装进真正的"标题栏"(title block)，这是图纸的法定格式。
+  ═══════════════════════════════════════════════ */
+  .s-blueprint{
+    color:var(--bp-ink);
+    background:
+      repeating-linear-gradient(0deg,transparent 0 39px,var(--blueprint-line) 39px 40px),
+      repeating-linear-gradient(90deg,transparent 0 39px,var(--blueprint-line) 39px 40px),
+      repeating-linear-gradient(0deg,transparent 0 7px,rgba(255,255,255,.05) 7px 8px),
+      repeating-linear-gradient(90deg,transparent 0 7px,rgba(255,255,255,.05) 7px 8px),
+      radial-gradient(1000px 600px at 20% 0%,#2a51c9,var(--blueprint) 70%);
+  }
+  .s-blueprint .mtl-tag{color:var(--bp-dim)}
+  .crosshair{position:absolute;width:34px;height:34px;opacity:.6}
+  .crosshair::before,.crosshair::after{content:"";position:absolute;background:#fff}
+  .crosshair::before{left:50%;top:0;width:1px;height:100%}
+  .crosshair::after{top:50%;left:0;height:1px;width:100%}
+  .ch-tl{top:28px;left:28px}.ch-tr{top:28px;right:28px}.ch-bl{bottom:28px;left:28px}.ch-br{bottom:28px;right:28px}
+
+  .titleblock{ /* 图纸标题栏 */
+    display:inline-block;border:1.5px solid rgba(255,255,255,.85);min-width:min(560px,80%);
+  }
+  .titleblock .tb-row{display:flex;justify-content:space-between;gap:24px;
+    padding:10px 18px;font-family:var(--mono);font-weight:500;font-size:10px;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--bp-dim)}
+  .titleblock .tb-row + .tb-row{border-top:1px solid rgba(255,255,255,.4)}
+  .titleblock h1{
+    font-family:var(--mono);font-weight:500;text-transform:uppercase;
+    font-size:clamp(30px,4.2vw,54px);line-height:1.18;letter-spacing:.07em;
+    padding:26px 18px;color:#fff;
+  }
+  .titleblock h1 em{font-style:normal;color:var(--bp-dim)}
+  .s-blueprint .lede{
+    font-family:var(--mono);font-weight:400;font-size:14px;line-height:1.8;
+    max-width:58ch;margin-top:32px;color:rgba(238,241,255,.85);
+  }
+  .spec-card{margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px}
+  .bp-card{border:1px solid rgba(255,255,255,.5);border-radius:3px;padding:24px;position:relative;
+    background:rgba(255,255,255,.04)}
+  .bp-card::before{content:attr(data-fig);position:absolute;top:-9px;left:16px;background:var(--blueprint);
+    padding:0 8px;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.14em}
+  .bp-card h3{font-family:var(--mono);font-weight:500;font-size:16px;letter-spacing:.04em;
+    text-transform:uppercase;margin-bottom:12px;color:#fff}
+  .bp-card p{font-family:var(--mono);font-size:12.5px;line-height:1.75;opacity:.82}
+  .dim{position:absolute;left:8vw;right:8vw;bottom:8vh;height:1px;background:rgba(255,255,255,.45)}
+  .dim::before,.dim::after{content:"";position:absolute;top:-5px;width:1px;height:11px;background:rgba(255,255,255,.45)}
+  .dim::before{left:0}.dim::after{right:0}
+  .dim span{position:absolute;left:50%;top:-9px;transform:translateX(-50%);background:var(--blueprint);
+    padding:0 10px;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.2em}
+
+  /* ═══ MTL-03 暗房 · 放大机下 ═════════════════════
+     工艺：银盐放大。字像相纸上显影出来的——
+     Display: Archivo Expanded 800 大写 —— 海报级的实，和描边的虚（显影/未显影）
+     Caption: Mono 小号 —— 底片袋上的铅笔注记
+  ═══════════════════════════════════════════════ */
+  .s-darkroom{background:radial-gradient(900px 500px at 70% 10%,#1b1a18,var(--darkroom) 65%);color:var(--darkroom-ink)}
+  .s-darkroom .mtl-tag{color:#b8472f}
+  .filmstrip{position:absolute;top:0;left:0;right:0;height:26px;background:#050505;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    background-image:repeating-linear-gradient(90deg,transparent 0 14px,rgba(255,255,255,.22) 14px 22px,transparent 22px 34px);
+    background-size:34px 10px;background-position:0 8px;background-repeat:repeat-x}
+  .s-darkroom h1{
+    font-family:var(--grot);font-stretch:125%;font-weight:800;text-transform:uppercase;
+    font-size:clamp(48px,6.8vw,100px);line-height:.94;letter-spacing:.005em;color:var(--darkroom-ink);
+  }
+  .s-darkroom h1 em{ /* 未显影的部分 */
+    font-style:normal;color:transparent;-webkit-text-stroke:1.5px rgba(232,228,218,.75);
+  }
+  .s-darkroom .lede{font-family:var(--mono);font-size:13px;line-height:1.8;max-width:52ch;
+    margin-top:30px;color:rgba(232,228,218,.62)}
+  .photos{margin-top:56px;display:flex;gap:32px;flex-wrap:wrap}
+  .photo{width:220px;padding:12px 12px 44px;background:#f5f2ea;transform:rotate(-1.6deg);
+    box-shadow:0 18px 40px rgba(0,0,0,.55);transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
+  .photo:nth-child(2){transform:rotate(1.2deg) translateY(18px)}
+  .photo:nth-child(3){transform:rotate(-.8deg) translateY(6px)}
+  .photo:hover{transform:rotate(0) scale(1.04);z-index:2}
+  .photo .img{aspect-ratio:4/3;filter:contrast(1.05) saturate(.9)}
+  .ph1{background:linear-gradient(150deg,#7a8ba0,#3d4a5c 55%,#1f2733)}
+  .ph2{background:linear-gradient(200deg,#c98a4b,#8a5a30 50%,#3d2c1c)}
+  .ph3{background:linear-gradient(120deg,#5c6e58,#2e3d2f 60%,#141c16)}
+  .photo figcaption{font-family:var(--mono);font-size:10px;color:#3a362f;margin-top:12px;letter-spacing:.06em}
+  .red-dot{position:absolute;right:8vw;top:11vh;display:flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.24em;color:#c14430}
+  .red-dot i{width:10px;height:10px;border-radius:50%;background:#c14430;box-shadow:0 0 14px #c14430;
+    animation:pulse 2.4s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+
+  /* ═══ MTL-04 金属 · 刻字 ═════════════════════════
+     工艺：蚀刻。去掉铭牌框和螺丝——整块拉丝金属直接铺在版面上，
+     字是刻进去的，不是贴上去的。Cinzel 是碑刻字体，600 字重吃得住凹陷阴影。
+     版面极静：名字、一行身份、一道刻线、几行小字，完。
+  ═══════════════════════════════════════════════ */
+  .s-metal{
+    display:flex;flex-direction:column;justify-content:center;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),
+      radial-gradient(1000px 700px at 30% 20%,var(--metal-hi),transparent 60%),
+      linear-gradient(155deg,var(--metal-hi),var(--metal-mid) 42%,var(--metal-lo) 68%,var(--metal-hi) 96%);
+  }
+  .s-metal .mtl-tag{color:#63635f}
+  .engraved{
+    font-family:var(--roman);font-weight:600;font-size:clamp(48px,5.8vw,84px);
+    line-height:1;letter-spacing:.09em;color:#4a4944;
+    text-shadow:0 1px 0 rgba(255,255,255,.8), 0 -1px 1px rgba(0,0,0,.3);
+  }
+  .engraved-sub{
+    font-family:var(--roman);font-weight:600;font-size:clamp(13px,1.3vw,17px);
+    letter-spacing:.52em;text-transform:uppercase;margin-top:18px;color:#575650;
+    text-shadow:0 1px 0 rgba(255,255,255,.75);
+  }
+  .s-metal .rule{ /* 也是刻出来的 */
+    border:0;height:1px;max-width:340px;margin:34px 0;
+    background:linear-gradient(90deg,rgba(0,0,0,.28),rgba(0,0,0,.1) 70%,transparent);
+    box-shadow:0 1px 0 rgba(255,255,255,.7);
+  }
+  .s-metal .lede{
+    font-family:var(--sans);font-weight:500;font-size:15px;line-height:1.8;letter-spacing:.01em;
+    max-width:46ch;color:#55544f;text-shadow:0 1px 0 rgba(255,255,255,.5);
+  }
+  .s-metal .serial{
+    position:absolute;bottom:5vh;right:8vw;
+    font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:#75746e;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+
+  footer{padding:40px 8vw 60px 96px;font-family:var(--mono);font-weight:500;font-size:11px;
+    letter-spacing:.12em;color:var(--ink-soft);background:var(--paper)}
+  footer b{color:var(--accent);font-weight:500}
+
+  @media (max-width:760px){
+    main{padding-left:0}
+    section{padding:14vh 7vw}
+    .spec-card{grid-template-columns:1fr}
+    .dock{left:50%;top:auto;bottom:16px;transform:translateX(-50%);flex-direction:row}
+    .dock-item{transform-origin:center bottom}
+    .dock-item .tag{display:none}
+    .dock-item.active::after{left:50%;top:auto;bottom:-9px;transform:translateX(-50%);width:22px;height:4px}
+    .s-paper .lede::first-letter{font-size:2.6em}
+    .titleblock{min-width:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="dock" aria-label="Site">
+  <a class="dock-item active" href="#home"><span class="swatch sw-paper"></span><span class="tag">Home · MTL-01</span></a>
+  <a class="dock-item" href="#blog"><span class="swatch sw-blueprint"></span><span class="tag">Blog · MTL-02</span></a>
+  <a class="dock-item" href="#gallery"><span class="swatch sw-dark"></span><span class="tag">Gallery · MTL-03</span></a>
+  <a class="dock-item" href="#about"><span class="swatch sw-metal"></span><span class="tag">About · MTL-04</span></a>
+  <div class="dock-sep"></div>
+  <a class="dock-item" href="#home" style="font-family:var(--mono);font-weight:500;font-size:15px">⌂<span class="tag">Top</span></a>
+</nav>
+
+<main>
+  <section class="s-paper" id="home">
+    <p class="mtl-tag">MTL-01 · Cotton paper, 300gsm</p>
+    <h1>OPM makes<br><em>small games</em>,<br>slowly &amp; on purpose.</h1>
+    <p class="lede">Devlogs, essays and field notes from a one-person studio. Everything here is set in book type — the serif is doing the talking, the italic is doing the singing. Paper doesn't shout.</p>
+    <span class="stamp">HANDMADE / EST. 2026</span>
+    <span class="folio">— 1 —</span>
+  </section>
+
+  <section class="s-blueprint" id="blog">
+    <i class="crosshair ch-tl"></i><i class="crosshair ch-tr"></i><i class="crosshair ch-bl"></i><i class="crosshair ch-br"></i>
+    <p class="mtl-tag">MTL-02 · Blueprint, ammonia print</p>
+    <div class="titleblock">
+      <div class="tb-row"><span>DWG NO. OPM-2026-001</span><span>REV C</span></div>
+      <h1>WORK IN<br><em>PROGRESS</em></h1>
+      <div class="tb-row"><span>DRAWN BY: OPM</span><span>SHEET 1 OF ∞</span></div>
+    </div>
+    <p class="lede">// Drafts from the workbench. Mono is the only honest typeface for things that aren't finished yet — every glyph takes the same space, no pretending.</p>
+    <div class="spec-card">
+      <article class="bp-card" data-fig="FIG.01 — DEVLOG">
+        <h3>Project Zero, week 1</h3>
+        <p>Movement prototype with a stick figure. It already feels right; nothing is drawn yet. On a blueprint, everything is measured before it exists.</p>
+      </article>
+      <article class="bp-card" data-fig="FIG.02 — ESSAY">
+        <h3>Small games, honest scope</h3>
+        <p>Essays could switch back to book type even inside this section — material signals content type, not just location.</p>
+      </article>
+    </div>
+    <div class="dim"><span>SCALE 1:1 — NO DEADLINES</span></div>
+  </section>
+
+  <section class="s-darkroom" id="gallery">
+    <div class="filmstrip"></div>
+    <span class="red-dot"><i></i>IN USE</span>
+    <p class="mtl-tag">MTL-03 · Darkroom, RC paper</p>
+    <h1>Photos,<br><em>developed</em><br>in the dark.</h1>
+    <p class="lede">Solid words are the prints that made it. The outlined one is still in the tray — image coming up, give it a minute under the red light.</p>
+    <div class="photos">
+      <figure class="photo"><div class="img ph1"></div><figcaption>city-walk_04 · f/8 · 1/250</figcaption></figure>
+      <figure class="photo"><div class="img ph2"></div><figcaption>city-walk_07 · f/2.8 · dusk</figcaption></figure>
+      <figure class="photo"><div class="img ph3"></div><figcaption>city-walk_11 · pushed +1</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="s-metal" id="about">
+    <p class="mtl-tag">MTL-04 · Brushed aluminium, etched</p>
+    <p class="engraved">OPM</p>
+    <p class="engraved-sub">Indie Game Developer</p>
+    <hr class="rule">
+    <p class="lede">One person. Previously at a large studio, now deliberately small. Tools of choice: a custom engine habit, a camera, and long walks. The letters above are etched, not printed — run your cursor over them and they won't smudge.</p>
+    <span class="serial">NO. 0001 / AL 6061</span>
+  </section>
+</main>
+
+<footer>OPMGAMES — MATERIAL LAB · <b>4 MATERIALS, 1 GLASS DOCK</b> · EST. 2026</footer>
+
+<script>
+  // dock 邻近放大（macOS 式）
+  const dock = document.querySelector('.dock');
+  const items = [...dock.querySelectorAll('.dock-item')];
+  dock.addEventListener('mousemove', e => {
+    const vertical = innerWidth > 760;
+    items.forEach(it => {
+      const r = it.getBoundingClientRect();
+      const c = vertical ? r.top + r.height / 2 : r.left + r.width / 2;
+      const p = vertical ? e.clientY : e.clientX;
+      const d = Math.min(Math.abs(p - c) / 130, 1);
+      const s = 1 + (1 - d) * 0.32;
+      it.style.transform = vertical ? `scale(${s}) translateX(${(1 - d) * 7}px)` : `scale(${s}) translateY(${-(1 - d) * 7}px)`;
+    });
+  });
+  dock.addEventListener('mouseleave', () => items.forEach(it => it.style.transform = ''));
+
+  // 滚动监听 → 高亮当前材质
+  const links = Object.fromEntries(items.slice(0, 4).map(a => [a.getAttribute('href').slice(1), a]));
+  const spy = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      items.forEach(a => a.classList.remove('active'));
+      links[en.target.id]?.classList.add('active');
+    }
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('section').forEach(s => spy.observe(s));
+</script>
+</body>
+</html>

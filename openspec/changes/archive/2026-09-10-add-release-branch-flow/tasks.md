@@ -13,6 +13,6 @@
 
 ## 3. End-to-end verification
 
-- [ ] 3.1 Make a trivial content change on `main`, push, confirm no deploy runs
-- [ ] 3.2 Open PR `main` → `release`, confirm `build` check runs and merge is blocked until green
-- [ ] 3.3 Merge the PR, confirm deploy workflow runs and site updates
+- [x] 3.1 Make a trivial content change on `main`, push, confirm no deploy runs
+- [x] 3.2 Open PR `main` → `release`, confirm `build` check runs and merge is blocked until green
+- [x] 3.3 Merge the PR, confirm deploy workflow runs and site updates

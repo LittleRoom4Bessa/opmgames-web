@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPM — editorial direction v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* 一张纸的色阶：全站只活在这个暖灰域里 */
+    --bg:#f7f4ee;            /* 暖白纸 */
+    --bg-sunken:#f0ece3;     /* 沉下去的纸 */
+    --ink:#1b1915;           /* 墨色 */
+    --ink-60:rgba(27,25,21,.62);
+    --ink-35:rgba(27,25,21,.35);
+    --line:rgba(27,25,21,.16); /* 发丝线 */
+    --rust:#b5501f;          /* 唯一的彩色：陶土，只给"当前"和"可点" */
+
+    --serif:'Instrument Serif',serif;
+    --book:'Newsreader',serif;
+    --sans:'Instrument Sans',sans-serif;
+    --mono:'IBM Plex Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased}
+  ::selection{background:var(--rust);color:#fff}
+
+  /* 氛围级颗粒：存在，但几乎看不见 */
+  .grain{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:.28;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E")}
+
+  /* ── Dock：一把安静的标尺 ─────────────────────
+     竖排小字 + 发丝线框 + 若有似无的模糊。
+     不放大、不弹跳，hover 只是墨色从 35% 走到 100%，当前项一粒陶土点。 */
+  .dock{
+    position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:100;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:14px 0;border:1px solid var(--line);border-radius:999px;
+    background:rgba(247,244,238,.55);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  }
+  .dock a{
+    writing-mode:vertical-rl;text-decoration:none;color:var(--ink-35);
+    font-family:var(--sans);font-weight:500;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    padding:12px 10px;position:relative;transition:color .25s;
+  }
+  .dock a:hover{color:var(--ink)}
+  .dock a.active{color:var(--ink)}
+  .dock a.active::after{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+    width:3px;height:3px;border-radius:50%;background:var(--rust)}
+  .dock .rule{width:14px;height:1px;background:var(--line);margin:8px 0}
+  .dock .brand{font-family:var(--serif);font-style:italic;font-size:15px;letter-spacing:0;
+    text-transform:none;color:var(--ink);padding:12px 0 4px}
+
+  /* ── 骨架 ─────────────────────────────────── */
+  main{padding-left:120px}
+  .page{min-height:100vh;padding:0 8vw 12vh;position:relative}
+  .page-head{ /* 页眉：小标签 + 发丝线，全站统一 */
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:34px;padding-bottom:20px;margin-bottom:9vh;border-bottom:1px solid var(--line);
+    font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-60);
+  }
+
+  /* 排版的全部张力：衬线巨字 × 小标签 */
+  .display{font-family:var(--serif);font-weight:400;line-height:1.02;letter-spacing:-.015em}
+  .display em{font-style:italic}
+  .meta{font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-60)}
+  .mono{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink-60)}
+  .prose{font-family:var(--book);font-weight:400;font-size:18px;line-height:1.75;color:#33302a;max-width:56ch}
+
+  /* ── 索引列表：发丝线 + 编号 + 悬停微移 ─────── */
+  .index{border-top:1px solid var(--line)}
+  .index a{
+    display:grid;grid-template-columns:52px 1fr auto auto;gap:28px;align-items:baseline;
+    padding:22px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);
+    transition:padding-left .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .index a:hover{padding-left:14px}
+  .index .no{font-family:var(--mono);font-size:11px;color:var(--ink-35)}
+  .index .t{font-family:var(--serif);font-size:clamp(20px,2.2vw,28px);line-height:1.15}
+  .index a:hover .t{font-style:italic}
+  .index .cat,.index .date{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-35)}
+  .index a:hover .cat{color:var(--rust)}
+
+  /* ── 相册 ─────────────────────────────────── */
+  .photos{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:2vh}
+  .photos figure{border:1px solid var(--line);padding:10px 10px 0;background:#fff}
+  .photos .img{aspect-ratio:4/3}
+  .photos figcaption{display:flex;justify-content:space-between;padding:10px 2px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--ink-60)}
+  .p1{grid-column:1/6}.p2{grid-column:7/13;margin-top:9vh}.p3{grid-column:3/9;margin-top:6vh}
+  .ph1{background:linear-gradient(150deg,#7a8ba0,#3d4a5c 55%,#1f2733)}
+  .ph2{background:linear-gradient(200deg,#c98a4b,#8a5a30 50%,#3d2c1c)}
+  .ph3{background:linear-gradient(120deg,#5c6e58,#2e3d2f 60%,#141c16)}
+
+  /* ── About：简历即网格 ─────────────────────── */
+  .cv{display:grid;grid-template-columns:200px 1fr;gap:24px 56px;border-top:1px solid var(--line);margin-top:6vh}
+  .cv > div{padding:26px 0;border-bottom:1px solid var(--line)}
+  .cv .k{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-35)}
+  .cv .v{font-family:var(--book);font-size:17px;line-height:1.7;color:#33302a}
+  .cv .v a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);transition:border-color .25s,color .25s}
+  .cv .v a:hover{border-color:var(--rust);color:var(--rust)}
+
+  footer{padding:34px 8vw 40px 120px;display:flex;justify-content:space-between;
+    border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-35)}
+
+  /* 翻页感：demo 里的 page 只是叠放，加页码暗示"这是不同页面" */
+  .folio{position:absolute;right:8vw;bottom:5vh;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-35)}
+
+  @media (max-width:760px){
+    main{padding-left:0}
+    .dock{left:50%;top:auto;bottom:14px;transform:translateX(-50%);flex-direction:row;padding:0 8px}
+    .dock a{writing-mode:horizontal-tb;padding:10px 10px}
+    .dock a.active::after{top:auto;bottom:2px}
+    .dock .rule{width:1px;height:14px;margin:0 4px}
+    .p1,.p2,.p3{grid-column:1/13;margin-top:0}
+    .cv{grid-template-columns:1fr;gap:0}
+    .index a{grid-template-columns:1fr auto;row-gap:6px}
+    .index .no{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="dock" aria-label="Site">
+  <span class="brand" style="writing-mode:vertical-rl">O.</span>
+  <div class="rule"></div>
+  <a href="#home" class="active">Home</a>
+  <a href="#blog">Blog</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#about">About</a>
+</nav>
+
+<main>
+
+  <!-- ═══ PAGE · HOME ═══ -->
+  <section class="page" id="home">
+    <div class="page-head"><span>OPM — Personal site</span><span>Est. 2026</span></div>
+    <p class="meta" style="margin-bottom:26px">Independent game developer</p>
+    <h1 class="display" style="font-size:clamp(52px,7.4vw,108px)">Making <em>small games</em>,<br>slowly, and writing<br>about the process.</h1>
+    <p class="prose" style="margin-top:40px">This site collects devlogs, essays, and photographs. Nothing here is optimized for engagement; it is a workshop with the door left open.</p>
+
+    <p class="meta" style="margin:12vh 0 18px">Latest</p>
+    <div class="index">
+      <a href="#blog"><span class="no">01</span><span class="t">Project Zero, week 1</span><span class="cat">Devlog</span><span class="date">Mar 2026</span></a>
+      <a href="#blog"><span class="no">02</span><span class="t">Small games, honest scope</span><span class="cat">Essay</span><span class="date">Mar 2026</span></a>
+      <a href="#gallery"><span class="no">03</span><span class="t">City Walk — six frames</span><span class="cat">Album</span><span class="date">Feb 2026</span></a>
+    </div>
+    <span class="folio">— i —</span>
+  </section>
+
+  <!-- ═══ PAGE · BLOG ═══ -->
+  <section class="page" id="blog">
+    <div class="page-head"><span>Blog</span><span>Devlogs &amp; Essays</span></div>
+    <h1 class="display" style="font-size:clamp(44px,5.6vw,84px)">Notes from<br>the <em>workbench</em>.</h1>
+    <p class="meta" style="margin:8vh 0 18px;color:var(--ink-35)">All — Devlog — Essay</p>
+    <div class="index">
+      <a href="#"><span class="no">01</span><span class="t">Project Zero, week 1</span><span class="cat">Devlog</span><span class="date">Mar 09</span></a>
+      <a href="#"><span class="no">02</span><span class="t">Small games, honest scope</span><span class="cat">Essay</span><span class="date">Mar 02</span></a>
+      <a href="#"><span class="no">03</span><span class="t">Hello, world</span><span class="cat">Essay</span><span class="date">Feb 20</span></a>
+      <a href="#"><span class="no">04</span><span class="t">Design notes (draft)</span><span class="cat">Devlog</span><span class="date">—</span></a>
+    </div>
+    <span class="folio">— ii —</span>
+  </section>
+
+  <!-- ═══ PAGE · GALLERY ═══ -->
+  <section class="page" id="gallery">
+    <div class="page-head"><span>Gallery</span><span>Albums</span></div>
+    <h1 class="display" style="font-size:clamp(44px,5.6vw,84px)">Field notes,<br><em>in pictures</em>.</h1>
+    <div class="photos">
+      <figure class="p1"><div class="img ph1"></div><figcaption><span>city-walk_04</span><span>f/8 · 1/250</span></figcaption></figure>
+      <figure class="p2"><div class="img ph2"></div><figcaption><span>city-walk_07</span><span>f/2.8 · dusk</span></figcaption></figure>
+      <figure class="p3"><div class="img ph3"></div><figcaption><span>city-walk_11</span><span>pushed +1</span></figcaption></figure>
+    </div>
+    <span class="folio">— iii —</span>
+  </section>
+
+  <!-- ═══ PAGE · ABOUT ═══ -->
+  <section class="page" id="about">
+    <div class="page-head"><span>About</span><span>Resume</span></div>
+    <h1 class="display" style="font-size:clamp(44px,5.6vw,84px)">OPM is one person<br>who <em>ships</em>.</h1>
+    <div class="cv">
+      <div class="k">Now</div>
+      <div class="v">Independent game developer. Building a small game, in public, without deadlines.</div>
+      <div class="k">Previously</div>
+      <div class="v">Gameplay programmer at a large studio; tools and engine work before that.</div>
+      <div class="k">Tools</div>
+      <div class="v">A custom-engine habit, a camera, and long walks.</div>
+      <div class="k">Elsewhere</div>
+      <div class="v"><a href="#">GitHub</a> · <a href="#">RSS</a> · <a href="#">Email</a></div>
+    </div>
+    <span class="folio">— iv —</span>
+  </section>
+
+</main>
+
+<footer><span>© 2026 OPM</span><span>SET IN INSTRUMENT SERIF &amp; NEWSREADER</span></footer>
+
+<script>
+  const links = [...document.querySelectorAll('.dock a')];
+  const spy = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    }
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.page').forEach(s => spy.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPM — v4 · a newspaper from a game developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f4ee; --bg-sunken:#efebe1;
+    --ink:#1b1915; --ink-60:rgba(27,25,21,.62); --ink-35:rgba(27,25,21,.35);
+    --line:rgba(27,25,21,.18); --line-strong:rgba(27,25,21,.55);
+    --rust:#b5501f;
+    --sans:'Archivo',sans-serif;
+    --book:'Newsreader',serif;
+    --pixel:'Silkscreen',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--book);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased}
+  ::selection{background:var(--rust);color:#fff}
+
+  .grain{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:.28;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E")}
+
+  /* ── Dock：像素小字标尺 ────────────────────── */
+  .dock{
+    position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:100;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:14px 0;border:1px solid var(--line);border-radius:999px;
+    background:rgba(247,244,238,.6);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  }
+  .dock a{
+    writing-mode:vertical-rl;text-decoration:none;color:var(--ink-35);
+    font-family:var(--pixel);font-weight:400;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    padding:12px 10px;position:relative;transition:color .25s;
+  }
+  .dock a:hover{color:var(--ink)}
+  .dock a.active{color:var(--ink)}
+  .dock a.active::after{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;background:var(--rust); /* 方点：像素世界里没有圆 */ }
+  .dock .rule{width:14px;height:1px;background:var(--line);margin:8px 0}
+  .dock .brand{font-family:var(--book);font-style:italic;font-size:15px;color:var(--ink);padding:12px 0 4px}
+
+  /* ── 骨架 ─────────────────────────────────── */
+  main{padding-left:120px}
+  .page{min-height:100vh;padding:0 7vw 12vh;position:relative}
+  .page-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:30px;padding-bottom:16px;margin-bottom:8vh;border-bottom:1px solid var(--line);
+    font-family:var(--pixel);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60);
+  }
+
+  /* 排版的两种声音：sans 吼标题，衬线斜体在中间吟唱 */
+  .display{
+    font-family:var(--sans);font-weight:800;font-stretch:110%;
+    line-height:.98;letter-spacing:-.02em;text-transform:uppercase;
+  }
+  .display em{
+    font-family:var(--book);font-style:italic;font-weight:400;
+    text-transform:none;letter-spacing:-.01em;
+  }
+  .kick{ /* 像素小标签：栏目名、日期、编号都用它 */
+    font-family:var(--pixel);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60);
+  }
+  .kick b{color:var(--rust);font-weight:400}
+
+  /* ── 索引列表 ─────────────────────────────── */
+  .index{border-top:1px solid var(--line)}
+  .index a{
+    display:grid;grid-template-columns:52px 1fr auto auto;gap:28px;align-items:baseline;
+    padding:20px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);
+    transition:padding-left .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .index a:hover{padding-left:14px}
+  .index .no{font-family:var(--pixel);font-size:10px;color:var(--ink-35)}
+  .index .t{font-family:var(--book);font-weight:500;font-size:clamp(19px,2vw,25px);line-height:1.2}
+  .index a:hover .t{font-style:italic}
+  .index .cat,.index .date{font-family:var(--pixel);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-35)}
+  .index a:hover .cat{color:var(--rust)}
+
+  /* ═══ 报纸：THE DAILY BUILD ═══════════════
+     抽象，不是模仿：不做新闻纸纹理、不做做旧。
+     报纸的全部感觉 = 报头 + 粗细双线 + 分栏线 + 齐行正文 + 栏目签。 */
+  .masthead{border-bottom:3px solid var(--ink);padding-bottom:0;margin-bottom:0}
+  .masthead .mh-meta{
+    display:flex;justify-content:space-between;padding:14px 0 10px;
+    font-family:var(--pixel);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60);
+  }
+  .masthead h1{
+    font-family:var(--sans);font-weight:800;font-stretch:125%;text-transform:uppercase;
+    font-size:clamp(54px,9.6vw,140px);line-height:.92;letter-spacing:-.025em;
+    text-align:center;padding:18px 0 22px;
+  }
+  .masthead .mh-sub{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--ink);padding:9px 0;
+    font-family:var(--pixel);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60);
+  }
+  .sections{display:flex;gap:26px;margin:26px 0 40px;
+    font-family:var(--pixel);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+  .sections span{color:var(--ink-35);cursor:pointer;transition:color .2s}
+  .sections span:hover{color:var(--ink)}
+  .sections .on{color:var(--ink);box-shadow:0 2px 0 var(--rust)}
+
+  .frontpage{display:grid;grid-template-columns:repeat(12,1fr);gap:0 36px}
+  .story{padding:0;text-decoration:none;color:var(--ink);display:block}
+  .story .kicker{font-family:var(--pixel);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-bottom:12px}
+  .story h3{font-family:var(--book);font-weight:600;line-height:1.14;letter-spacing:-.005em}
+  .story .deck{font-size:14.5px;line-height:1.62;color:#403c34;text-align:justify;hyphens:auto;margin-top:10px}
+  .story .dateline{font-family:var(--pixel);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35);margin-top:14px}
+  .story:hover h3{font-style:italic}
+
+  .lead-story{grid-column:1/8;padding-right:36px;border-right:1px solid var(--line)}
+  .lead-story h3{font-size:clamp(30px,3.4vw,46px)}
+  .lead-story .deck{columns:2;column-gap:28px;column-rule:1px solid var(--line);margin-top:16px}
+  .side-story{grid-column:8/13}
+  .side-story h3{font-size:22px}
+  .side-story + .side-story{border-top:1px solid var(--line);margin-top:26px;padding-top:26px}
+  .bottom-story{grid-column:span 4;padding-top:26px;margin-top:30px;border-top:2px solid var(--ink)}
+  .bottom-story h3{font-size:19px}
+  .bottom-story + .bottom-story{} /* grid gap handles spacing */
+
+  /* ── 相册 ─────────────────────────────────── */
+  .photos{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:2vh}
+  .photos figure{border:1px solid var(--line);padding:10px 10px 0;background:#fff}
+  .photos .img{aspect-ratio:4/3}
+  .photos figcaption{display:flex;justify-content:space-between;padding:10px 2px;
+    font-family:var(--pixel);font-size:8.5px;letter-spacing:.12em;color:var(--ink-60)}
+  .p1{grid-column:1/6}.p2{grid-column:7/13;margin-top:9vh}.p3{grid-column:3/9;margin-top:6vh}
+  .ph1{background:linear-gradient(150deg,#7a8ba0,#3d4a5c 55%,#1f2733)}
+  .ph2{background:linear-gradient(200deg,#c98a4b,#8a5a30 50%,#3d2c1c)}
+  .ph3{background:linear-gradient(120deg,#5c6e58,#2e3d2f 60%,#141c16)}
+
+  /* ── About ────────────────────────────────── */
+  .cv{display:grid;grid-template-columns:200px 1fr;gap:24px 56px;border-top:1px solid var(--line);margin-top:6vh}
+  .cv > div{padding:24px 0;border-bottom:1px solid var(--line)}
+  .cv .k{font-family:var(--pixel);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-35)}
+  .cv .v{font-size:17px;line-height:1.7;color:#33302a}
+  .cv .v a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);transition:.25s}
+  .cv .v a:hover{border-color:var(--rust);color:var(--rust)}
+
+  footer{padding:30px 7vw 40px 120px;display:flex;justify-content:space-between;
+    border-top:1px solid var(--line);font-family:var(--pixel);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35)}
+
+  @media (max-width:760px){
+    main{padding-left:0}
+    .dock{left:50%;top:auto;bottom:14px;transform:translateX(-50%);flex-direction:row;padding:0 8px}
+    .dock a{writing-mode:horizontal-tb;padding:10px}
+    .dock a.active::after{top:auto;bottom:2px}
+    .dock .rule{width:1px;height:14px;margin:0 4px}
+    .p1,.p2,.p3{grid-column:1/13;margin-top:0}
+    .lead-story{grid-column:1/13;border-right:0;padding-right:0;padding-bottom:26px;border-bottom:1px solid var(--line);margin-bottom:26px}
+    .side-story{grid-column:1/13}
+    .bottom-story{grid-column:1/13}
+    .lead-story .deck{columns:1}
+    .cv{grid-template-columns:1fr;gap:0}
+    .masthead h1{font-size:clamp(40px,12vw,80px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="dock" aria-label="Site">
+  <span class="brand" style="writing-mode:vertical-rl">O.</span>
+  <div class="rule"></div>
+  <a href="#home">Home</a>
+  <a href="#blog" class="active">Blog</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#about">About</a>
+</nav>
+
+<main>
+
+  <!-- ═══ PAGE · HOME ═══ -->
+  <section class="page" id="home">
+    <div class="page-head"><span>OPM — Personal site</span><span>Est. 2026</span></div>
+    <p class="kick" style="margin-bottom:26px">Independent <b>game developer</b></p>
+    <h1 class="display" style="font-size:clamp(48px,6.8vw,100px)">Making <em>small games</em>,<br>slowly, and writing<br>about the process.</h1>
+    <p style="font-size:18px;line-height:1.75;color:#403c34;max-width:56ch;margin-top:36px">This site collects devlogs, essays, and photographs. Nothing here is optimized for engagement; it is a workshop with the door left open.</p>
+
+    <p class="kick" style="margin:11vh 0 16px"><b>Latest</b> — from all desks</p>
+    <div class="index">
+      <a href="#blog"><span class="no">01</span><span class="t">Project Zero, week 1</span><span class="cat">Devlog</span><span class="date">Mar 2026</span></a>
+      <a href="#blog"><span class="no">02</span><span class="t">Small games, honest scope</span><span class="cat">Essay</span><span class="date">Mar 2026</span></a>
+      <a href="#gallery"><span class="no">03</span><span class="t">City Walk — six frames</span><span class="cat">Album</span><span class="date">Feb 2026</span></a>
+    </div>
+  </section>
+
+  <!-- ═══ PAGE · BLOG = 报纸 ═══ -->
+  <section class="page" id="blog">
+    <div class="masthead">
+      <div class="mh-meta"><span>Vol. 1 — No. 004</span><span>Published irregularly</span><span>March 2026</span></div>
+      <h1>The Daily Build</h1>
+      <div class="mh-sub"><span>Devlogs &amp; essays from a one-person studio</span><span>Price: free</span></div>
+    </div>
+
+    <div class="sections"><span class="on">All</span><span>Devlog</span><span>Essay</span></div>
+
+    <div class="frontpage">
+      <a class="story lead-story" href="#">
+        <p class="kicker">Devlog — Project Zero</p>
+        <h3>Week 1: a stick figure that already feels right</h3>
+        <p class="deck">Nothing is drawn yet and everything moves. The first week of a prototype is the cheapest time to be wrong, so this one was spent entirely on jump arcs, coyote time, and the exact weight of a landing. Six tunings of gravity later, the placeholder capsule finally stopped feeling like a browser demo and started feeling like a character. The build is ugly. The build is honest.</p>
+        <p class="dateline">Mar 09 — Filed from the workbench</p>
+      </a>
+      <a class="story side-story" href="#">
+        <p class="kicker">Essay</p>
+        <h3>Small games, honest scope</h3>
+        <p class="deck">Scope is a promise you make to your future self. Keep it small enough to keep.</p>
+        <p class="dateline">Mar 02</p>
+      </a>
+      <a class="story side-story" href="#">
+        <p class="kicker">Essay</p>
+        <h3>Hello, world</h3>
+        <p class="deck">A first post, a named thing, a public commitment device.</p>
+        <p class="dateline">Feb 20</p>
+      </a>
+      <a class="story bottom-story" href="#">
+        <p class="kicker">Devlog</p>
+        <h3>Design notes, unedited</h3>
+        <p class="dateline">Draft — not yet filed</p>
+      </a>
+      <a class="story bottom-story" href="#">
+        <p class="kicker">Essay</p>
+        <h3>Why a custom engine habit is worth it</h3>
+        <p class="dateline">Feb 12</p>
+      </a>
+      <a class="story bottom-story" href="#">
+        <p class="kicker">Devlog</p>
+        <h3>Week 0: the repo before the game</h3>
+        <p class="dateline">Feb 05</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══ PAGE · GALLERY ═══ -->
+  <section class="page" id="gallery">
+    <div class="page-head"><span>Gallery</span><span>Albums</span></div>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)">Field notes,<br><em>in pictures</em>.</h1>
+    <div class="photos">
+      <figure class="p1"><div class="img ph1"></div><figcaption><span>city-walk_04</span><span>f/8 · 1/250</span></figcaption></figure>
+      <figure class="p2"><div class="img ph2"></div><figcaption><span>city-walk_07</span><span>f/2.8 · dusk</span></figcaption></figure>
+      <figure class="p3"><div class="img ph3"></div><figcaption><span>city-walk_11</span><span>pushed +1</span></figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ═══ PAGE · ABOUT ═══ -->
+  <section class="page" id="about">
+    <div class="page-head"><span>About</span><span>Resume</span></div>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)">OPM is one person<br>who <em>ships</em>.</h1>
+    <div class="cv">
+      <div class="k">Now</div>
+      <div class="v">Independent game developer. Building a small game, in public, without deadlines.</div>
+      <div class="k">Previously</div>
+      <div class="v">Gameplay programmer at a large studio; tools and engine work before that.</div>
+      <div class="k">Tools</div>
+      <div class="v">A custom-engine habit, a camera, and long walks.</div>
+      <div class="k">Elsewhere</div>
+      <div class="v"><a href="#">GitHub</a> · <a href="#">RSS</a> · <a href="#">Email</a></div>
+    </div>
+  </section>
+
+</main>
+
+<footer><span>© 2026 OPM</span><span>Set in Archivo, Newsreader &amp; Silkscreen</span></footer>
+
+<script>
+  const links = [...document.querySelectorAll('.dock a')];
+  const spy = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    }
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.page').forEach(s => spy.observe(s));
+</script>
+</body>
+</html>

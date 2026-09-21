@@ -1,37 +1,48 @@
 ---
-import { render } from 'astro:content';
-import Base from '../../layouts/Base.astro';
-import { getPosts, formatDate } from '../../lib/content';
+import Base from "../../layouts/Base.astro";
+import { getPosts, formatDate } from "../../lib/content";
+import { render } from "astro:content";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      allIds: posts.map((p) => p.id),
+      prev: posts[i + 1] ?? null, // older
+      next: posts[i - 1] ?? null, // newer
+    },
+  }));
 }
 
-const { post } = Astro.props;
+const { post, allIds, prev, next } = Astro.props;
 const { Content } = await render(post);
+const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
 ---
 
 <Base title={post.data.title} description={post.data.description}>
-  <article class="prose">
-    <header>
+  <article class="page">
+    <header class="article-head">
+      <span class="kick"><b>{post.data.category}</b> — № {number}</span>
       <h1>{post.data.title}</h1>
-      <p class="meta">
-        <time datetime={post.data.pubDate.toISOString()}>
-          {formatDate(post.data.pubDate)}
-        </time>
-        {' · '}
-        <span class="badge">{post.data.category}</span>
-        {post.data.draft && <span class="badge">draft</span>}
-      </p>
+      <span class="dateline" style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35)">
+        {formatDate(post.data.pubDate)} — Filed from the workbench
+      </span>
       {post.data.tags.length > 0 && (
-        <ul class="tag-list">
-          {post.data.tags.map((tag) => (
-            <li><a href={`/tags/${tag}/`}>#{tag}</a></li>
-          ))}
-        </ul>
+        <div class="tags-row">
+          {post.data.tags.map((t) => <a href={`/tags/${t}`}>{t}</a>)}
+        </div>
       )}
     </header>
-    <Content />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <nav class="post-nav">
+      <span>{prev && <a href={`/blog/${prev.id}/`}>← {prev.data.title}</a>}</span>
+      <span>{next && <a href={`/blog/${next.id}/`}>{next.data.title} →</a>}</span>
+    </nav>
   </article>
 </Base>

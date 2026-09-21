@@ -1,9 +1,10 @@
 ---
-import Base from '../../layouts/Base.astro';
-import { getPosts, getAlbums, formatDate } from '../../lib/content';
+import Base from "../../layouts/Base.astro";
+import { getPosts, getAlbums, formatDate } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const [posts, albums] = await Promise.all([getPosts(), getAlbums()]);
+  const posts = await getPosts();
+  const albums = await getAlbums();
   const tags = new Set<string>();
   posts.forEach((p) => p.data.tags.forEach((t) => tags.add(t)));
   albums.forEach((a) => a.data.tags.forEach((t) => tags.add(t)));
@@ -18,50 +19,25 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts, albums } = Astro.props;
+const rows = [
+  ...posts.map((p) => ({ title: p.data.title, href: `/blog/${p.id}/`, cat: p.data.category, date: p.data.pubDate })),
+  ...albums.map((a) => ({ title: a.data.title, href: `/fotos/${a.id}/`, cat: "Fotos", date: a.data.date })),
+].sort((a, b) => b.date.getTime() - a.date.getTime());
 ---
 
-<Base title={`#${tag}`} description={`Posts and albums tagged "${tag}".`}>
-  <h1>#{tag}</h1>
-
-  {posts.length > 0 && (
-    <section>
-      <h2>Blog posts</h2>
-      <ul class="card-list">
-        {posts.map((post) => (
-          <li>
-            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
-            {' '}
-            <span class="meta">
-              <time datetime={post.data.pubDate.toISOString()}>
-                {formatDate(post.data.pubDate)}
-              </time>
-              {' · '}
-              <span class="badge">{post.data.category}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-
-  {albums.length > 0 && (
-    <section>
-      <h2>Albums</h2>
-      <ul class="card-list">
-        {albums.map((album) => (
-          <li>
-            <a href={`/gallery/${album.id}/`}>{album.data.title}</a>
-            {' '}
-            <span class="meta">
-              <time datetime={album.data.date.toISOString()}>
-                {formatDate(album.data.date)}
-              </time>
-              {' · '}
-              <span class="badge">album</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+<Base title={`#${tag}`} description={`Posts and albums tagged ${tag}.`}>
+  <section class="page">
+    <p class="kick" style="margin-bottom:26px"><b>/ TAGS</b> — {tag.toUpperCase()}</p>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)"><em>#{tag}</em></h1>
+    <div class="index" style="margin-top:8vh">
+      {rows.map((row, i) => (
+        <a class="row" href={row.href}>
+          <span class="no">{String(i + 1).padStart(2, "0")}</span>
+          <span class="t">{row.title}</span>
+          <span class="cat">{row.cat}</span>
+          <span class="date">{formatDate(row.date)}</span>
+        </a>
+      ))}
+    </div>
+  </section>
 </Base>
