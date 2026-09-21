@@ -1,94 +1,51 @@
 ---
-import { Image } from 'astro:assets';
-import Base from '../layouts/Base.astro';
-import { getPosts, getAlbums, formatDate } from '../lib/content';
+import Base from "../layouts/Base.astro";
+import { getPosts, getAlbums, formatDate } from "../lib/content";
 
-const posts = (await getPosts()).slice(0, 4);
-const albums = (await getAlbums()).slice(0, 3);
+const posts = await getPosts();
+const albums = await getAlbums();
+
+// merge posts + albums by date, newest first
+const latest = [
+  ...posts.map((p) => ({
+    title: p.data.title,
+    href: `/blog/${p.id}/`,
+    cat: p.data.category,
+    date: p.data.pubDate,
+  })),
+  ...albums.map((a) => ({
+    title: a.data.title,
+    href: `/fotos/${a.id}/`,
+    cat: "Fotos",
+    date: a.data.date,
+  })),
+]
+  .sort((a, b) => b.date.getTime() - a.date.getTime())
+  .slice(0, 5);
 ---
 
-<Base title="OPM Games" description="Personal site of an indie game developer — devlogs, essays, and photos.">
-  <section class="hero">
-    <h1>Hi, I'm OPM — I make games.</h1>
-    <p>
-      This is my corner of the internet: devlogs from whatever I'm building,
-      essays on design and the indie life, and the occasional photo album.
+<Base title="Home" description="OPM is an independent game developer. Devlogs, essays, and photographs from a one-person studio.">
+  <section class="page">
+    <span class="crosshair" style="top:6vh;right:2vw" aria-hidden="true">+++</span>
+    <p style="font-size:18px;line-height:1.75;color:#403c34;max-width:54ch;margin-bottom:5vh">
+      Devlogs, essays, and photographs from a one-person studio. Nothing here is
+      optimized for engagement; it is a workshop with the door left open.
     </p>
+    <h1 class="display" style="font-size:clamp(48px,7vw,104px)">
+      Making small<br /><span class="px">GAMES</span>, slowly,<br /><em>and writing about it.</em>
+    </h1>
+
+    <p class="kick" style="margin:11vh 0 16px"><b>/ LATEST</b> — FROM ALL DESKS</p>
+    <div class="index">
+      {latest.map((item, i) => (
+        <a class="row" href={item.href}>
+          <span class="no">{String(i + 1).padStart(2, "0")}</span>
+          <span class="t">{item.title}</span>
+          <span class="cat">{item.cat}</span>
+          <span class="date">{formatDate(item.date)}</span>
+        </a>
+      ))}
+    </div>
+    <span class="crosshair" style="bottom:8vh;left:38vw" aria-hidden="true">+++</span>
   </section>
-
-  {posts.length > 0 && (
-    <section>
-      <h2>Latest writing</h2>
-      <ul class="card-list">
-        {posts.map((post) => (
-          <li>
-            <a href={`/blog/${post.id}/`}><strong>{post.data.title}</strong></a>
-            <p class="meta" style="margin: var(--space-1) 0 0">
-              <time datetime={post.data.pubDate.toISOString()}>
-                {formatDate(post.data.pubDate)}
-              </time>
-              {' · '}
-              <span class="badge">{post.data.category}</span>
-            </p>
-          </li>
-        ))}
-      </ul>
-      <p><a href="/blog">All posts →</a></p>
-    </section>
-  )}
-
-  {albums.length > 0 && (
-    <section>
-      <h2>Latest albums</h2>
-      <ul class="home-albums">
-        {albums.map((album) => (
-          <li>
-            <a href={`/gallery/${album.id}/`}>
-              <Image
-                src={album.data.cover}
-                alt={album.data.title}
-                widths={[320, 640]}
-                sizes="(max-width: 640px) 100vw, 320px"
-                loading="lazy"
-              />
-              <span>{album.data.title}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-      <p><a href="/gallery">All albums →</a></p>
-    </section>
-  )}
 </Base>
-
-<style>
-  .hero {
-    padding: var(--space-8) 0 var(--space-6);
-  }
-  .hero h1 {
-    margin-top: 0;
-  }
-  .home-albums {
-    list-style: none;
-    padding: 0;
-    margin: var(--space-6) 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--space-4);
-  }
-  .home-albums a {
-    display: block;
-    color: var(--color-text);
-  }
-  .home-albums a:hover {
-    text-decoration: none;
-  }
-  .home-albums img {
-    border-radius: 8px;
-    border: 1px solid var(--color-border);
-    aspect-ratio: 3 / 2;
-    object-fit: cover;
-    width: 100%;
-    margin-bottom: var(--space-2);
-  }
-</style>

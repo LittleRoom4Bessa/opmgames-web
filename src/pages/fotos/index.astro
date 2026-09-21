@@ -1,0 +1,23 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getAlbums, formatDate } from "../../lib/content";
+
+const albums = await getAlbums();
+---
+
+<Base title="Fotos" description="Photo albums — field notes in pictures.">
+  <section class="page">
+    <p class="kick" style="margin-bottom:26px"><b>/ FOTOS</b> — ALBUMS</p>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)">Field notes,<br /><em>in pictures.</em></h1>
+    <div class="index" style="margin-top:8vh">
+      {albums.map((album, i) => (
+        <a class="row" href={`/fotos/${album.id}/`}>
+          <span class="no">{String(i + 1).padStart(2, "0")}</span>
+          <span class="t">{album.data.title}</span>
+          <span class="cat">{album.data.photos.length} fotos</span>
+          <span class="date">{formatDate(album.data.date)}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

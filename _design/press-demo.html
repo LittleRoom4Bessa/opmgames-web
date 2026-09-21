@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPM — v5 · sans × pixel × halftone serif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f3ec; --ink:#1b1915;
+    --ink-60:rgba(27,25,21,.62); --ink-35:rgba(27,25,21,.35);
+    --line:rgba(27,25,21,.18); --line-strong:rgba(27,25,21,.55);
+    --rust:#b5501f;
+    --sans:'Archivo',sans-serif; --book:'Newsreader',serif; --pixel:'Silkscreen',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--book);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased}
+  ::selection{background:var(--rust);color:#fff}
+
+  .grain{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:.26;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E")}
+
+  /* ── Dock：像素标尺 + 方点 ─────────────────── */
+  .dock{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:100;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:14px 0;border:1px solid var(--line);border-radius:999px;
+    background:rgba(246,243,236,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .dock a{writing-mode:vertical-rl;text-decoration:none;color:var(--ink-35);
+    font-family:var(--pixel);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    padding:12px 10px;position:relative;transition:color .25s}
+  .dock a:hover{color:var(--ink)}
+  .dock a.active{color:var(--ink)}
+  .dock a.active::after{content:"";position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;background:var(--rust)}
+  .dock .rule{width:14px;height:1px;background:var(--line);margin:8px 0}
+  .dock .brand{font-family:var(--book);font-style:italic;font-size:15px;color:var(--ink);padding:12px 0 4px}
+
+  main{padding-left:120px}
+  .page{min-height:100vh;padding:0 7vw 12vh;position:relative}
+  .page-head{display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:30px;padding-bottom:16px;margin-bottom:8vh;border-bottom:1px solid var(--line);
+    font-family:var(--pixel);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60)}
+
+  /* 三种声音：sans 吼 / 像素签名 / 衬线吟唱 */
+  .display{font-family:var(--sans);font-weight:800;font-stretch:112%;line-height:.98;
+    letter-spacing:-.02em;text-transform:uppercase}
+  .display .px{font-family:var(--pixel);font-weight:700;letter-spacing:-.01em}
+  .display em{font-family:var(--book);font-style:italic;font-weight:400;text-transform:none;letter-spacing:-.01em}
+  .kick{font-family:var(--pixel);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60)}
+  .kick b{color:var(--rust);font-weight:400}
+  .crosshair{position:absolute;font-family:var(--pixel);font-size:14px;color:var(--ink-35)}
+
+  /* ── 索引列表（home/about 用） ─────────────── */
+  .index{border-top:1px solid var(--line)}
+  .index a{display:grid;grid-template-columns:52px 1fr auto auto;gap:28px;align-items:baseline;
+    padding:20px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);
+    transition:padding-left .3s cubic-bezier(.2,.7,.2,1)}
+  .index a:hover{padding-left:14px}
+  .index .no{font-family:var(--pixel);font-size:10px;color:var(--ink-35)}
+  .index .t{font-family:var(--book);font-weight:500;font-size:clamp(19px,2vw,25px);line-height:1.2}
+  .index a:hover .t{font-style:italic}
+  .index .cat,.index .date{font-family:var(--pixel);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-35)}
+  .index a:hover .cat{color:var(--rust)}
+
+  /* ═══ 报纸页：fionavilmer 式裁切行 ═══════════
+     不是经典报纸版式，而是"扫描件"：
+     大衬线 Times 标题行 + 像素栏目签 + 行内小图。
+     （半调裁切试过，已否决删除。） */
+  .press-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;
+    border-top:3px solid var(--ink);border-bottom:1px solid var(--ink);
+    padding:14px 0 12px;margin-bottom:7vh}
+  .press-head .pt{font-family:var(--sans);font-weight:800;font-stretch:120%;text-transform:uppercase;
+    font-size:clamp(24px,3.2vw,44px);letter-spacing:-.02em;line-height:1}
+  .press-head .pt .px{font-family:var(--pixel);font-weight:700}
+  .press-head .pi{font-family:var(--pixel);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-60)}
+
+  .srow{display:block;text-decoration:none;color:var(--ink);padding-bottom:5vh}
+  .srow .kicker{display:block;font-family:var(--pixel);font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-60);margin-bottom:14px}
+  .srow .kicker b{color:var(--rust);font-weight:400}
+
+  .clipped h3{font-family:Times,'Times New Roman',serif;font-weight:400;font-size:clamp(28px,3.6vw,52px);
+    line-height:1.04;letter-spacing:-.015em}
+  .inimg{display:inline-block;height:.78em;width:1.45em;vertical-align:-.06em;margin:0 .1em;
+    border:1px solid var(--line-strong);filter:grayscale(.2)}
+  .g1{background:linear-gradient(150deg,#7a8ba0,#3d4a5c 55%,#1f2733)}
+  .g2{background:linear-gradient(200deg,#c98a4b,#8a5a30 50%,#3d2c1c)}
+  .g3{background:linear-gradient(120deg,#5c6e58,#2e3d2f 60%,#141c16)}
+  .g4{background:linear-gradient(160deg,#b8b0a2,#6e675a 60%,#35322b)}
+
+  .srow .deck{font-size:15px;line-height:1.65;color:#403c34;max-width:62ch;margin-top:12px}
+
+  /* ── 相册：[ FIG. n ] 卡片 ─────────────────── */
+  .photos{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;margin-top:2vh}
+  .photos figure{border:1px solid var(--line-strong);background:var(--bg)}
+  .fighead{display:flex;justify-content:space-between;padding:7px 10px;
+    font-family:var(--pixel);font-size:9px;letter-spacing:.14em;color:var(--ink-60);
+    border-bottom:1px solid var(--line)}
+  .photos .img{aspect-ratio:4/3;border-bottom:1px solid var(--line)}
+  .photos figcaption{display:flex;justify-content:space-between;padding:9px 10px;
+    font-family:var(--pixel);font-size:8.5px;letter-spacing:.12em;color:var(--ink-60)}
+  .p1{grid-column:1/6}.p2{grid-column:7/13;margin-top:9vh}.p3{grid-column:3/9;margin-top:6vh}
+  .ph1{background:linear-gradient(150deg,#7a8ba0,#3d4a5c 55%,#1f2733)}
+  .ph2{background:linear-gradient(200deg,#c98a4b,#8a5a30 50%,#3d2c1c)}
+  .ph3{background:linear-gradient(120deg,#5c6e58,#2e3d2f 60%,#141c16)}
+
+  /* ── About ────────────────────────────────── */
+  .cv{display:grid;grid-template-columns:200px 1fr;gap:24px 56px;border-top:1px solid var(--line);margin-top:6vh}
+  .cv > div{padding:24px 0;border-bottom:1px solid var(--line)}
+  .cv .k{font-family:var(--pixel);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-35)}
+  .cv .v{font-size:17px;line-height:1.7;color:#33302a}
+  .cv .v a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);transition:.25s}
+  .cv .v a:hover{border-color:var(--rust);color:var(--rust)}
+
+  footer{padding:30px 7vw 40px 120px;display:flex;justify-content:space-between;
+    border-top:1px solid var(--line);font-family:var(--pixel);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35)}
+
+  @media (max-width:760px){
+    main{padding-left:0}
+    .dock{left:50%;top:auto;bottom:14px;transform:translateX(-50%);flex-direction:row;padding:0 8px}
+    .dock a{writing-mode:horizontal-tb;padding:10px}
+    .dock a.active::after{top:auto;bottom:2px}
+    .dock .rule{width:1px;height:14px;margin:0 4px}
+    .p1,.p2,.p3{grid-column:1/13;margin-top:0}
+    .cv{grid-template-columns:1fr;gap:0}
+    .index a{grid-template-columns:1fr auto;row-gap:6px}
+    .index .no{display:none}
+    }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<nav class="dock" aria-label="Site">
+  <span class="brand" style="writing-mode:vertical-rl">O.</span>
+  <div class="rule"></div>
+  <a href="#home">Home</a>
+  <a href="#blog" class="active">Blog</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#about">About</a>
+</nav>
+
+<main>
+
+  <!-- ═══ HOME ═══ -->
+  <section class="page" id="home">
+    <span class="crosshair" style="top:12vh;right:9vw">+++</span>
+    <span class="crosshair" style="bottom:14vh;left:38vw">+++</span>
+    <div class="page-head"><span>/ HOME</span><span>OPM — EST. 2026</span></div>
+    <p class="kick" style="margin-bottom:26px">Independent <b>game developer</b></p>
+    <p style="font-size:18px;line-height:1.75;color:#403c34;max-width:56ch;margin-bottom:5vh">Devlogs, essays, and photographs from a one-person studio. Nothing here is optimized for engagement; it is a workshop with the door left open.</p>
+    <h1 class="display" style="font-size:clamp(48px,7vw,104px)">
+      Making small<br><span class="px">GAMES</span>, slowly,<br><em>and writing about it.</em>
+    </h1>
+
+    <p class="kick" style="margin:11vh 0 16px"><b>/ LATEST</b> — FROM ALL DESKS</p>
+    <div class="index">
+      <a href="#blog"><span class="no">01</span><span class="t">Week 1: a stick figure that already feels right</span><span class="cat">Devlog</span><span class="date">Mar 09</span></a>
+      <a href="#blog"><span class="no">02</span><span class="t">Small games, honest scope</span><span class="cat">Essay</span><span class="date">Mar 02</span></a>
+      <a href="#gallery"><span class="no">03</span><span class="t">City Walk — six frames</span><span class="cat">Album</span><span class="date">Feb 26</span></a>
+    </div>
+  </section>
+
+  <!-- ═══ BLOG = 扫描件报纸 ═══ -->
+  <section class="page" id="blog">
+    <div class="press-head">
+      <span class="pt">The Daily <span class="px">BUILD</span></span>
+      <span class="pi">Vol.1 · No.004 · Published irregularly · Mar 2026</span>
+    </div>
+
+    <a class="srow" href="#">
+      <span class="kicker"><b>Devlog</b> — № 001</span>
+      <div class="clipped"><h3>Week 1: a stick figure <i class="inimg g1"></i> that already feels right — six tunings of gravity, coyote time, and the exact weight of a landing. The build is ugly. The build is honest.</h3></div>
+      <p class="deck">The first week of a prototype is the cheapest time to be wrong, so this one was spent entirely on movement. Nothing is drawn yet and everything moves.</p>
+    </a>
+
+    <a class="srow" href="#">
+      <span class="kicker"><b>Essay</b> — № 002</span>
+      <div class="clipped"><h3>Small games <i class="inimg g2"></i>, honest scope: scope is a promise you make to your future self — keep it small enough to keep.</h3></div>
+      <p class="deck">Every feature you cut in week one is a feature you don't have to cut in month six.</p>
+    </a>
+
+    <a class="srow" href="#">
+      <span class="kicker"><b>Essay</b> — № 003</span>
+      <div class="clipped"><h3>Hello, world: a first post <i class="inimg g3"></i>, a named thing, a public commitment device.</h3></div>
+      <p class="deck">Naming things is the oldest commitment device there is.</p>
+    </a>
+
+    <a class="srow" href="#">
+      <span class="kicker"><b>Devlog</b> — № 004 · Draft</span>
+      <div class="clipped"><h3>Design notes <i class="inimg g4"></i>, unedited: fragments from the margins of the prototype.</h3></div>
+      <p class="deck">Not yet filed.</p>
+    </a>
+  </section>
+
+  <!-- ═══ GALLERY ═══ -->
+  <section class="page" id="gallery">
+    <div class="page-head"><span>/ GALLERY</span><span>Albums</span></div>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)">Field notes,<br><em>in pictures.</em></h1>
+    <div class="photos">
+      <figure class="p1"><div class="fighead"><span>[ FIG. 1 ]</span><span>▤</span></div><div class="img ph1"></div><figcaption><span>city-walk_04</span><span>f/8 · 1/250</span></figcaption></figure>
+      <figure class="p2"><div class="fighead"><span>[ FIG. 2 ]</span><span>▤</span></div><div class="img ph2"></div><figcaption><span>city-walk_07</span><span>f/2.8 · dusk</span></figcaption></figure>
+      <figure class="p3"><div class="fighead"><span>[ FIG. 3 ]</span><span>▤</span></div><div class="img ph3"></div><figcaption><span>city-walk_11</span><span>pushed +1</span></figcaption></figure>
+    </div>
+  </section>
+
+  <!-- ═══ ABOUT ═══ -->
+  <section class="page" id="about">
+    <div class="page-head"><span>/ ABOUT</span><span>Resume</span></div>
+    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)">One person<br>who <span class="px">SHIPS</span>.</h1>
+    <div class="cv">
+      <div class="k">Now</div>
+      <div class="v">Independent game developer. Building a small game, in public, without deadlines.</div>
+      <div class="k">Previously</div>
+      <div class="v">Gameplay programmer at a large studio; tools and engine work before that.</div>
+      <div class="k">Tools</div>
+      <div class="v">A custom-engine habit, a camera, and long walks.</div>
+      <div class="k">Elsewhere</div>
+      <div class="v"><a href="#">GitHub</a> · <a href="#">RSS</a> · <a href="#">Email</a></div>
+    </div>
+  </section>
+
+</main>
+
+<footer><span>© 2026 OPM</span><span>Archivo × Newsreader × Silkscreen</span></footer>
+
+<script>
+  const links = [...document.querySelectorAll('.dock a')];
+  const spy = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    }
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  document.querySelectorAll('.page').forEach(s => spy.observe(s));
+</script>
+</body>
+</html>

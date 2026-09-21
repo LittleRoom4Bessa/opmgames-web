@@ -1,0 +1,90 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getAlbums, formatDate } from "../../lib/content";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+
+export async function getStaticPaths() {
+  const albums = await getAlbums();
+  return albums.map((album, i) => ({
+    params: { slug: album.id },
+    props: { album, issue: albums.length - i },
+  }));
+}
+
+const { album, issue } = Astro.props;
+const { Content } = await render(album);
+const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
+---
+
+<Base title={album.data.title} description={album.data.description}>
+  <section class="page">
+    <div class="album-cover">
+      <p class="issue">Fotos — Issue {String(issue).padStart(2, "0")}</p>
+      <h1>{album.data.title}</h1>
+      <p class="sub">{album.data.description} · {formatDate(album.data.date)}</p>
+      <figure class="album-hero">
+        <Image src={album.data.cover} alt={album.data.title} widths={[720, 980, 1400]} sizes="(max-width: 980px) 92vw, 980px" />
+        <figcaption><span>Featured — cover</span><span>{formatDate(album.data.date)}</span></figcaption>
+      </figure>
+    </div>
+
+    <div class="album-body">
+      <div class="album-note">
+        <Content />
+      </div>
+      <div class="photogrid">
+        {album.data.photos.map((photo, i) => (
+          <figure class={slots[i % slots.length]}>
+            <a href={`#photo-${i}`} data-lightbox={i} aria-label={`View ${photo.alt}`}>
+              <Image src={photo.src} alt={photo.alt} widths={[480, 720, 1080]} sizes="(max-width: 760px) 92vw, 50vw" />
+            </a>
+            <figcaption>
+              <span>{photo.alt}</span>
+              <span>{String(i + 1).padStart(2, "0")} / {String(album.data.photos.length).padStart(2, "0")}</span>
+            </figcaption>
+            {photo.caption && <span class="sr-only">{photo.caption}</span>}
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="close" id="lightbox-close">Close ×</button>
+    <figure>
+      <img id="lightbox-img" src="" alt="" />
+      <figcaption><span id="lightbox-alt"></span><span id="lightbox-count"></span></figcaption>
+    </figure>
+  </div>
+
+  <script>
+    const lb = document.getElementById("lightbox")!;
+    const lbImg = document.getElementById("lightbox-img") as HTMLImageElement;
+    const lbAlt = document.getElementById("lightbox-alt")!;
+    const lbCount = document.getElementById("lightbox-count")!;
+    const triggers = document.querySelectorAll("[data-lightbox]");
+    const total = triggers.length;
+
+    triggers.forEach((t) => {
+      t.addEventListener("click", (e) => {
+        e.preventDefault();
+        const img = t.querySelector("img")!;
+        lbImg.src = img.currentSrc || img.src;
+        lbImg.alt = img.alt;
+        lbAlt.textContent = img.alt;
+        lbCount.textContent = `${Number(t.getAttribute("data-lightbox")) + 1} / ${total}`;
+        lb.classList.add("open");
+        document.body.style.overflow = "hidden";
+      });
+    });
+
+    function close() {
+      lb.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    document.getElementById("lightbox-close")!.addEventListener("click", close);
+    lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  </script>
+</Base>

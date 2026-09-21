@@ -1,0 +1,42 @@
+---
+// The Daily Build — masthead + section tabs + newsstand stack
+import { formatDate, formatMonthYear } from "../lib/content";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  posts: CollectionEntry<"blog">[];
+  active: "all" | "devlog" | "essay";
+  allIds: string[]; // every published post id, newest first — stable numbering
+}
+
+const { posts, active, allIds } = Astro.props;
+const latest = allIds.length ? posts[0]?.data.pubDate : undefined;
+const issue = String(allIds.length).padStart(3, "0");
+const volLine = `Vol.1 · No.${issue} · Published irregularly` + (latest ? ` · ${formatMonthYear(latest)}` : "");
+
+// numbering: oldest post = № 001, stable across filtered pages
+const number = (id: string) => String(allIds.length - allIds.indexOf(id)).padStart(3, "0");
+---
+
+<div class="press-head">
+  <a class="pt" href="/blog">The Daily <span class="px">BUILD</span></a>
+  <span class="pi">{volLine}</span>
+</div>
+
+<nav class="sections" aria-label="Blog sections">
+  <a href="/blog" class={active === "all" ? "on" : ""} aria-current={active === "all" ? "page" : undefined}>All</a>
+  <a href="/blog/devlogs" class={active === "devlog" ? "on" : ""} aria-current={active === "devlog" ? "page" : undefined}>Devlogs</a>
+  <a href="/blog/essays" class={active === "essay" ? "on" : ""} aria-current={active === "essay" ? "page" : undefined}>Essays</a>
+</nav>
+
+<div>
+  {posts.map((post) => (
+    <a class="srow" href={`/blog/${post.id}/`}>
+      <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)}</span>
+      <div class="peek"><h3>{post.data.title}</h3></div>
+      <p class="deck">{post.data.description}</p>
+      <span class="dateline">{formatDate(post.data.pubDate)}</span>
+    </a>
+  ))}
+  <div style="border-top:1px solid var(--line)"></div>
+</div>

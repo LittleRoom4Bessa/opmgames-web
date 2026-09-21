@@ -1,26 +1,28 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 
 interface Props {
   title: string;
-  description: string;
-  wide?: boolean;
+  description?: string;
+  frontmatter?: { title: string; description?: string };
 }
 
-// Support usage as a markdown layout (frontmatter prop) as well as a component.
-const fm = Astro.props.frontmatter ?? Astro.props;
-const { title, description, wide = false } = fm as Props;
-const siteName = 'OPM Games';
-const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const fp = Astro.props.frontmatter;
+const title = fp?.title ?? Astro.props.title;
+const description = fp?.description ?? Astro.props.description ?? "OPM — independent game developer. Devlogs, essays, and photographs.";
+const pageTitle = title === "Home" ? "OPM Games" : `${title} — OPM Games`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const navItems = [
-  { href: '/', label: 'Home', match: (p: string) => p === '/' },
-  { href: '/blog', label: 'Blog', match: (p: string) => p.startsWith('/blog') },
-  { href: '/gallery', label: 'Gallery', match: (p: string) => p.startsWith('/gallery') },
-  { href: '/about', label: 'About', match: (p: string) => p.startsWith('/about') },
+// current section from path → header label + dock active state
+const seg = Astro.url.pathname.split("/")[1] || "home";
+const section = ["blog", "fotos", "about", "tags"].includes(seg) ? seg : "home";
+const here = "/ " + section.toUpperCase();
+const nav = [
+  { id: "home", label: "Home", href: "/" },
+  { id: "blog", label: "Blog", href: "/blog" },
+  { id: "fotos", label: "Fotos", href: "/fotos" },
+  { id: "about", label: "About", href: "/about" },
 ];
-const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -28,37 +30,47 @@ const path = Astro.url.pathname;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{fullTitle}</title>
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
-    <link rel="alternate" type="application/rss+xml" title={siteName} href="/rss.xml" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <link rel="alternate" type="application/rss+xml" title="OPM Games" href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&family=Newsreader:ital,wght@0,400;1,400&family=Silkscreen:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div class="site-shell">
-      <header class="site-header">
-        <div class="site-header__inner">
-          <a class="site-title" href="/">{siteName}</a>
-          <nav class="site-nav" aria-label="Main">
-            {navItems.map((item) => (
-              <a href={item.href} aria-current={item.match(path) ? 'page' : undefined}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </header>
-      <main class:list={['site-main', { 'site-main--wide': wide }]}>
-        <slot />
-      </main>
-      <footer class="site-footer">
-        <div class="site-footer__inner">
-          <span>© {new Date().getFullYear()} {siteName}</span>
-          {' · '}
-          <a href="/rss.xml">RSS</a>
-        </div>
-      </footer>
-    </div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="site-head">
+      <span class="here">{here}</span>
+      <a class="logo" href="/">OPM Games</a>
+      <span class="slot">Est. 2026</span>
+    </header>
+
+    <nav class="dock" aria-label="Site">
+      <a class="brand" href="/" style="writing-mode:vertical-rl">O.</a>
+      <div class="rule"></div>
+      {nav.map((item) => (
+        <a href={item.href} class={section === item.id ? "active" : ""} aria-current={section === item.id ? "page" : undefined}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <main class="page-frame">
+      <slot />
+    </main>
+
+    <footer class="site-foot">
+      <span>© {new Date().getFullYear()} OPM Games</span>
+      <span><a href="/rss.xml">RSS</a> · Archivo × Newsreader × Times × Silkscreen</span>
+    </footer>
   </body>
 </html>
