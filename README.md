@@ -1,6 +1,6 @@
 # opmgames-web
 
-Personal site of OPM (indie game developer) — **https://opmgames.com**
+Personal site of OPM — **https://opmgames.com**
 
 Built with [Astro](https://astro.build), deployed to GitHub Pages.
 

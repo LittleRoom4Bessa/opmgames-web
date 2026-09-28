@@ -9,7 +9,7 @@ interface Props {
 
 const fp = Astro.props.frontmatter;
 const title = fp?.title ?? Astro.props.title;
-const description = fp?.description ?? Astro.props.description ?? "OPM — independent game developer. Devlogs, essays, and photographs.";
+const description = fp?.description ?? Astro.props.description ?? "OPM — a one-person studio. Devlogs, essays, and photographs.";
 const pageTitle = title === "Home" ? "OPM Games" : `${title} — OPM Games`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 

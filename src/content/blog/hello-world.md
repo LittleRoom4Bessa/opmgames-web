@@ -12,6 +12,6 @@ about the process — the wins, the dead ends, and everything in between.
 Expect two kinds of writing here:
 
 - **Devlogs** — technical, in-the-trenches notes while building a game.
-- **Essays** — longer reflections on design, tools, and the indie life.
+- **Essays** — longer reflections on design, tools, and the workbench life.
 
 More soon.
