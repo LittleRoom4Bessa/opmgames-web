@@ -5,20 +5,31 @@ import { render } from "astro:content";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
-  return posts.map((post, i) => ({
-    params: { slug: post.id },
-    props: {
-      post,
-      allIds: posts.map((p) => p.id),
-      prev: posts[i + 1] ?? null, // older
-      next: posts[i - 1] ?? null, // newer
-    },
-  }));
+  // indexes and numbering count originals only; translations hang off them
+  const originals = posts.filter((p) => !p.data.translationOf);
+  return posts.map((post) => {
+    const anchorId = post.data.translationOf ?? post.id;
+    const i = originals.findIndex((p) => p.id === anchorId);
+    const sibling = posts.find(
+      (p) => (p.data.translationOf ?? p.id) === anchorId && p.id !== post.id
+    );
+    return {
+      params: { slug: post.id },
+      props: {
+        post,
+        allIds: originals.map((p) => p.id),
+        anchorId,
+        sibling: sibling ? { id: sibling.id, lang: sibling.data.lang } : null,
+        prev: originals[i + 1] ?? null, // older
+        next: originals[i - 1] ?? null, // newer
+      },
+    };
+  });
 }
 
-const { post, allIds, prev, next } = Astro.props;
+const { post, allIds, anchorId, sibling, prev, next } = Astro.props;
 const { Content } = await render(post);
-const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
+const number = String(allIds.length - allIds.indexOf(anchorId)).padStart(3, "0");
 ---
 
 <Base title={post.data.title} description={post.data.description} lang={post.data.lang}>
@@ -29,6 +40,11 @@ const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
       <span class="dateline">
         {formatDate(post.data.pubDate)} — Filed from the workbench
       </span>
+      {sibling && (
+        <a class="lang-switch" href={`/blog/${sibling.id}/`} hreflang={sibling.lang}>
+          {sibling.lang === "en" ? "English version" : "中文版"} →
+        </a>
+      )}
       {post.data.tags.length > 0 && (
         <div class="tags-row">
           {post.data.tags.map((t) => <a href={`/tags/${t}`}>{t}</a>)}

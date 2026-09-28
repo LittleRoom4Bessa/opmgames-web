@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import { getPosts, getAlbums, formatDate } from "../../lib/content";
 
 export async function getStaticPaths() {
-  const posts = await getPosts();
+  const posts = (await getPosts()).filter((p) => !p.data.translationOf);
   const albums = await getAlbums();
   const tags = new Set<string>();
   posts.forEach((p) => p.data.tags.forEach((t) => tags.add(t)));

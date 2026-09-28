@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import { getPosts, getAlbums, formatDate } from "../lib/content";
 
-const posts = await getPosts();
+const posts = (await getPosts()).filter((p) => !p.data.translationOf);
 const albums = await getAlbums();
 
 // merge posts + albums by date, newest first

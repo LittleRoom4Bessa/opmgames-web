@@ -30,6 +30,7 @@ const number = (id: string) => String(allIds.length - allIds.indexOf(id)).padSta
 </nav>
 
 <div>
+  {posts.length === 0 && <p class="srow-empty">Nothing filed yet…</p>}
   {posts.map((post) => (
     <a class="srow" href={`/blog/${post.id}/`}>
       <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)}</span>

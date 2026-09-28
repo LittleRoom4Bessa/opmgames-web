@@ -10,6 +10,9 @@ const blog = defineCollection({
     category: z.enum(['devlog', 'essay']),
     tags: z.array(z.string()).default([]),
     lang: z.enum(['en', 'zh']).default('en'),
+    // slug of the original post when this entry is a translation.
+    // Translations get pages but stay out of indexes/numbering.
+    translationOf: z.string().optional(),
     // Reserved for a future /games section: groups devlogs under a game.
     // No UI renders this field yet.
     game: z.string().optional(),
