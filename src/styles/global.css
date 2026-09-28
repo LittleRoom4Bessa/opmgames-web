@@ -2,6 +2,8 @@
    OPM Games — editorial-press design system
    abstract the real world, don't mimic it
    ───────────────────────────────────────────── */
+@import "./noto-serif-sc.css";
+
 :root {
   --bg: #ffffff;
   --ink: #1b1915;
@@ -11,11 +13,13 @@
   --line-strong: rgba(27, 25, 21, 0.55);
   --rust: #b5501f;
 
+  /* CJK falls through to self-hosted Noto Serif SC — iOS has no CJK serif,
+     and this makes zh render identically on every platform */
   --sans: 'Archivo', sans-serif;
-  --book: 'Newsreader', serif;
+  --book: 'Newsreader', 'Noto Serif SC', serif;
   --pixel: 'Silkscreen', monospace;
   --mono: 'IBM Plex Mono', monospace;
-  --times: Times, 'Times New Roman', serif;
+  --times: Times, 'Times New Roman', 'Noto Serif SC', serif;
 }
 
 *,
