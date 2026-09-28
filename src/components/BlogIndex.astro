@@ -7,15 +7,19 @@ interface Props {
   posts: CollectionEntry<"blog">[];
   active: "all" | "devlog" | "essay";
   allIds: string[]; // every published post id, newest first — stable numbering
+  translations: Map<string, string[]>; // original id → translation langs
 }
 
-const { posts, active, allIds } = Astro.props;
+const { posts, active, allIds, translations } = Astro.props;
 const latest = allIds.length ? posts[0]?.data.pubDate : undefined;
 const issue = String(allIds.length).padStart(3, "0");
 const volLine = `Vol.1 · No.${issue} · Published irregularly` + (latest ? ` · ${formatMonthYear(latest)}` : "");
 
 // numbering: oldest post = № 001, stable across filtered pages
 const number = (id: string) => String(allIds.length - allIds.indexOf(id)).padStart(3, "0");
+// wire-style lang marker: own lang + any translation langs, e.g. "ZH · EN"
+const langs = (post: CollectionEntry<"blog">) =>
+  [post.data.lang, ...(translations.get(post.id) ?? [])].join(" · ").toUpperCase();
 ---
 
 <div class="press-head">
@@ -33,7 +37,7 @@ const number = (id: string) => String(allIds.length - allIds.indexOf(id)).padSta
   {posts.length === 0 && <p class="srow-empty">Nothing filed yet…</p>}
   {posts.map((post) => (
     <a class="srow" href={`/blog/${post.id}/`}>
-      <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)}</span>
+      <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)} — {langs(post)}</span>
       <div class="peek"><h3>{post.data.title}</h3></div>
       <p class="deck">{post.data.description}</p>
       <span class="dateline">{formatDate(post.data.pubDate)}</span>

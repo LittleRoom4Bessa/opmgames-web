@@ -5,6 +5,7 @@ interface Props {
   title: string;
   description?: string;
   lang?: string;
+  translation?: { href: string; lang: string };
   frontmatter?: { title: string; description?: string; lang?: string };
 }
 
@@ -13,6 +14,7 @@ const title = fp?.title ?? Astro.props.title;
 const description = fp?.description ?? Astro.props.description ?? "OPM — a one-person studio. Devlogs, essays, and photographs.";
 const pageTitle = title === "Home" ? "OPM Games" : `${title} — OPM Games`;
 const lang = fp?.lang ?? Astro.props.lang ?? "en";
+const translation = Astro.props.translation;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 // current section from path → header label + dock active state
@@ -41,6 +43,23 @@ const nav = [
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <link rel="alternate" type="application/rss+xml" title="OPM Games" href="/rss.xml" />
+    {translation && <link rel="alternate" hreflang={translation.lang} href={new URL(translation.href, Astro.site)} />}
+    {translation && (
+      <script is:inline define:vars={{ translationHref: translation.href, pageLang: lang, targetLang: translation.lang }}>
+        (function () {
+          try {
+            if (sessionStorage.getItem("opm-lang-manual")) return;
+            var langs = navigator.languages || [navigator.language];
+            var has = function (l) {
+              return langs.some(function (x) {
+                return x && x.toLowerCase().indexOf(l) === 0;
+              });
+            };
+            if (!has(pageLang) && has(targetLang)) location.replace(translationHref);
+          } catch (e) {}
+        })();
+      </script>
+    )}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
