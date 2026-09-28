@@ -32,7 +32,8 @@ const { Content } = await render(post);
 const number = String(allIds.length - allIds.indexOf(anchorId)).padStart(3, "0");
 ---
 
-<Base title={post.data.title} description={post.data.description} lang={post.data.lang}>
+<Base title={post.data.title} description={post.data.description} lang={post.data.lang}
+  translation={sibling ? { href: `/blog/${sibling.id}/`, lang: sibling.lang } : undefined}>
   <article class="page">
     <header class="article-head">
       <span class="kick"><b>{post.data.category}</b> — № {number}</span>
@@ -41,7 +42,8 @@ const number = String(allIds.length - allIds.indexOf(anchorId)).padStart(3, "0")
         {formatDate(post.data.pubDate)} — Filed from the workbench
       </span>
       {sibling && (
-        <a class="lang-switch" href={`/blog/${sibling.id}/`} hreflang={sibling.lang}>
+        <a class="lang-switch" href={`/blog/${sibling.id}/`} hreflang={sibling.lang}
+          onclick={`sessionStorage.setItem('opm-lang-manual','1')`}>
           {sibling.lang === "en" ? "English version" : "中文版"} →
         </a>
       )}

@@ -1,14 +1,15 @@
 ---
 import Base from "../../layouts/Base.astro";
 import BlogIndex from "../../components/BlogIndex.astro";
-import { getPosts } from "../../lib/content";
+import { getPosts, getTranslationLangs } from "../../lib/content";
 
 const all = (await getPosts()).filter((p) => !p.data.translationOf);
 const posts = all.filter((p) => p.data.category === "essay");
+const translations = await getTranslationLangs();
 ---
 
 <Base title="Essays" description="Essays — longer thinking from the workbench.">
   <section class="page">
-    <BlogIndex posts={posts} active="essay" allIds={all.map((p) => p.id)} />
+    <BlogIndex posts={posts} active="essay" allIds={all.map((p) => p.id)} translations={translations} />
   </section>
 </Base>

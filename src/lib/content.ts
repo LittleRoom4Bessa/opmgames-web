@@ -15,6 +15,18 @@ export async function getAlbums() {
   );
 }
 
+/** Original post id → langs of its translations (for index markers). */
+export async function getTranslationLangs(): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  for (const p of await getPosts()) {
+    if (!p.data.translationOf) continue;
+    const arr = map.get(p.data.translationOf) ?? [];
+    arr.push(p.data.lang);
+    map.set(p.data.translationOf, arr);
+  }
+  return map;
+}
+
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
