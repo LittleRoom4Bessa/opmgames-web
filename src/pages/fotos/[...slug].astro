@@ -24,7 +24,7 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
       <h1>{album.data.title}</h1>
       <p class="sub">{album.data.description} · {formatDate(album.data.date)}</p>
       <figure class="album-hero">
-        <Image src={album.data.cover} alt={album.data.title} widths={[720, 980, 1400]} sizes="(max-width: 980px) 92vw, 980px" />
+        <Image src={album.data.cover} alt={album.data.title} widths={[720, 980, 1400]} sizes="(max-width: 980px) 92vw, 980px" loading="eager" fetchpriority="high" />
         <figcaption><span>Featured — cover</span><span>{formatDate(album.data.date)}</span></figcaption>
       </figure>
     </div>
@@ -36,9 +36,9 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
       <div class="photogrid">
         {album.data.photos.map((photo, i) => (
           <figure class={slots[i % slots.length]}>
-            <a href={`#photo-${i}`} data-lightbox={i} aria-label={`View ${photo.alt}`}>
-              <Image src={photo.src} alt={photo.alt} widths={[480, 720, 1080]} sizes="(max-width: 760px) 92vw, 50vw" />
-            </a>
+            <button type="button" data-lightbox={i} aria-label={`View ${photo.alt}`}>
+              <Image src={photo.src} alt={photo.alt} widths={[480, 720, 1080]} sizes="(max-width: 760px) 92vw, 50vw" loading="lazy" />
+            </button>
             <figcaption>
               <span>{photo.alt}</span>
               <span>{String(i + 1).padStart(2, "0")} / {String(album.data.photos.length).padStart(2, "0")}</span>
@@ -53,7 +53,7 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
     <button class="close" id="lightbox-close">Close ×</button>
     <figure>
-      <img id="lightbox-img" src="" alt="" />
+      <img id="lightbox-img" alt="" />
       <figcaption><span id="lightbox-alt"></span><span id="lightbox-count"></span></figcaption>
     </figure>
   </div>
@@ -63,28 +63,40 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
     const lbImg = document.getElementById("lightbox-img") as HTMLImageElement;
     const lbAlt = document.getElementById("lightbox-alt")!;
     const lbCount = document.getElementById("lightbox-count")!;
-    const triggers = document.querySelectorAll("[data-lightbox]");
+    const lbClose = document.getElementById("lightbox-close") as HTMLButtonElement;
+    const triggers = document.querySelectorAll<HTMLButtonElement>("[data-lightbox]");
     const total = triggers.length;
+    let lastTrigger: HTMLButtonElement | null = null;
 
     triggers.forEach((t) => {
-      t.addEventListener("click", (e) => {
-        e.preventDefault();
+      t.addEventListener("click", () => {
         const img = t.querySelector("img")!;
         lbImg.src = img.currentSrc || img.src;
         lbImg.alt = img.alt;
         lbAlt.textContent = img.alt;
         lbCount.textContent = `${Number(t.getAttribute("data-lightbox")) + 1} / ${total}`;
+        lastTrigger = t;
         lb.classList.add("open");
         document.body.style.overflow = "hidden";
+        lbClose.focus();
       });
     });
 
     function close() {
       lb.classList.remove("open");
       document.body.style.overflow = "";
+      lastTrigger?.focus();
+      lastTrigger = null;
     }
-    document.getElementById("lightbox-close")!.addEventListener("click", close);
+    lbClose.addEventListener("click", close);
     lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+    // minimal focus trap: keep Tab cycling between close button and dialog
+    lb.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab" || !lb.classList.contains("open")) return;
+      e.preventDefault();
+      lbClose.focus();
+    });
   </script>
 </Base>

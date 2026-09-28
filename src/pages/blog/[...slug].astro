@@ -26,7 +26,7 @@ const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
     <header class="article-head">
       <span class="kick"><b>{post.data.category}</b> — № {number}</span>
       <h1>{post.data.title}</h1>
-      <span class="dateline" style="font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-35)">
+      <span class="dateline">
         {formatDate(post.data.pubDate)} — Filed from the workbench
       </span>
       {post.data.tags.length > 0 && (
@@ -41,8 +41,8 @@ const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
     </div>
 
     <nav class="post-nav">
-      <span>{prev && <a href={`/blog/${prev.id}/`}>← {prev.data.title}</a>}</span>
-      <span>{next && <a href={`/blog/${next.id}/`}>{next.data.title} →</a>}</span>
+      {prev && <a href={`/blog/${prev.id}/`}>← {prev.data.title}</a>}
+      {next && <a class="next" href={`/blog/${next.id}/`}>{next.data.title} →</a>}
     </nav>
   </article>
 </Base>

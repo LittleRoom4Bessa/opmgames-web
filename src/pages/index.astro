@@ -37,6 +37,7 @@ const latest = [
 
     <p class="kick" style="margin:11vh 0 16px"><b>/ LATEST</b> — FROM ALL DESKS</p>
     <div class="index">
+      {latest.length === 0 && <p class="empty">Nothing filed yet…</p>}
       {latest.map((item, i) => (
         <a class="row" href={item.href}>
           <span class="no">{String(i + 1).padStart(2, "0")}</span>

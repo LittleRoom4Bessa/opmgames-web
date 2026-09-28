@@ -30,6 +30,7 @@ const rows = [
     <p class="kick" style="margin-bottom:26px"><b>/ TAGS</b> — {tag.toUpperCase()}</p>
     <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)"><em>#{tag}</em></h1>
     <div class="index" style="margin-top:8vh">
+      {rows.length === 0 && <p class="empty">Nothing filed yet…</p>}
       {rows.map((row, i) => (
         <a class="row" href={row.href}>
           <span class="no">{String(i + 1).padStart(2, "0")}</span>
