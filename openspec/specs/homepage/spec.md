@@ -8,26 +8,26 @@ The homepage introduces the site owner and surfaces the latest blog posts and ga
 
 ### Requirement: Hero section
 
-The homepage SHALL present a hero section introducing the owner (name/identity as an indie game developer) with a short tagline.
+The homepage SHALL present a hero section introducing the site as a one-person studio with a short tagline. Identity claims SHALL follow the no-unearned-claims rule (see about-page spec).
 
 #### Scenario: First impression
 
 - **WHEN** a visitor opens `/`
-- **THEN** the hero communicates who the owner is and what this site is about, above the fold
+- **THEN** the hero communicates what this site is about, above the fold, without claiming credentials not backed by shipped work
 
 ### Requirement: Latest content entry points
 
-The homepage SHALL surface the most recent blog posts (e.g. latest 3–5) and the most recent gallery albums (e.g. latest 3), each linking to the corresponding page, plus links to the full Blog and Gallery indexes.
+The homepage SHALL surface the most recent content — blog posts and gallery albums merged into a single reverse-chronological list (e.g. latest 5) — each entry linking to its page, with links onward to the full Blog and Gallery indexes. Translated blog entries SHALL NOT appear as separate rows (see blog spec).
 
-#### Scenario: Latest posts shown
+#### Scenario: Latest content shown
 
-- **WHEN** a visitor opens `/` and at least one non-draft post exists
-- **THEN** the latest posts are listed with title, date, and category, linking to the post pages
+- **WHEN** a visitor opens `/` and at least one non-draft post or album exists
+- **THEN** the latest entries are listed with title, content type, and date, linking to their pages
 
-#### Scenario: Latest albums shown
+#### Scenario: Empty state
 
-- **WHEN** a visitor opens `/` and at least one album exists
-- **THEN** the latest albums are listed with cover image and title, linking to the album pages
+- **WHEN** no published content exists
+- **THEN** the list renders an explicit empty state instead of a bare rule
 
 #### Scenario: Empty state
 

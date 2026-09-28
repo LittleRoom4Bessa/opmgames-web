@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The gallery publishes photo albums (cover, body text, ordered photos with optional captions) with a grid index, album pages with lightbox, optimized images, and unified tag pages shared with the blog.
+The gallery publishes photo albums (cover, body text, ordered photos with optional captions) with a row index, album pages with lightbox, optimized images, and unified tag pages shared with the blog. The gallery lives at `/fotos`.
 
 ## Requirements
 
@@ -17,26 +17,26 @@ Gallery albums SHALL be authored as content collection entries with a validated 
 
 ### Requirement: Gallery index
 
-`/gallery` SHALL list all albums in reverse chronological order, each shown with its cover image, title, and date, linking to the album page.
+`/fotos` SHALL list all albums in reverse chronological order as text rows, each showing sequence number, title, photo count, and date, linking to the album page.
 
 #### Scenario: Album listing
 
-- **WHEN** a visitor opens `/gallery`
-- **THEN** albums render as a cover grid, newest first, each linking to `/gallery/<slug>`
+- **WHEN** a visitor opens `/fotos`
+- **THEN** albums render as a row list, newest first, each linking to `/fotos/<slug>`
 
 ### Requirement: Album page with grid and lightbox
 
-Each album SHALL have a page at `/gallery/[slug]` rendering the album title, date, body text, linked tags, and a grid of its photos (each photo displaying its `alt` semantics and optional `caption`). Clicking a photo SHALL open a lightbox showing the full-size image with the ability to navigate between the album's photos and close the lightbox.
+Each album SHALL have a page at `/fotos/[slug]` rendering the album title, date, body text, linked tags, and a grid of its photos (each photo displaying its `alt` semantics and optional `caption`). Clicking a photo SHALL open a lightbox showing the full-size image; the lightbox closes via its close button, backdrop click, or Escape.
 
 #### Scenario: Grid rendering
 
 - **WHEN** a visitor opens an album page
 - **THEN** photos render in a grid in the order defined in frontmatter, with captions where provided
 
-#### Scenario: Lightbox navigation
+#### Scenario: Lightbox focus management
 
-- **WHEN** a visitor clicks a photo
-- **THEN** a lightbox opens at full size and allows moving to previous/next photo and closing (including via keyboard Escape)
+- **WHEN** a visitor opens the lightbox
+- **THEN** focus moves into the lightbox, Tab stays within it, and closing returns focus to the triggering photo
 
 ### Requirement: Image optimization
 
