@@ -4,13 +4,15 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
-  frontmatter?: { title: string; description?: string };
+  lang?: string;
+  frontmatter?: { title: string; description?: string; lang?: string };
 }
 
 const fp = Astro.props.frontmatter;
 const title = fp?.title ?? Astro.props.title;
 const description = fp?.description ?? Astro.props.description ?? "OPM — a one-person studio. Devlogs, essays, and photographs.";
 const pageTitle = title === "Home" ? "OPM Games" : `${title} — OPM Games`;
+const lang = fp?.lang ?? Astro.props.lang ?? "en";
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 // current section from path → header label + dock active state
@@ -26,7 +28,7 @@ const nav = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

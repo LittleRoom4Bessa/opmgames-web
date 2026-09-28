@@ -9,6 +9,7 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     category: z.enum(['devlog', 'essay']),
     tags: z.array(z.string()).default([]),
+    lang: z.enum(['en', 'zh']).default('en'),
     // Reserved for a future /games section: groups devlogs under a game.
     // No UI renders this field yet.
     game: z.string().optional(),

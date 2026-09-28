@@ -21,7 +21,7 @@ const { Content } = await render(post);
 const number = String(allIds.length - allIds.indexOf(post.id)).padStart(3, "0");
 ---
 
-<Base title={post.data.title} description={post.data.description}>
+<Base title={post.data.title} description={post.data.description} lang={post.data.lang}>
   <article class="page">
     <header class="article-head">
       <span class="kick"><b>{post.data.category}</b> — № {number}</span>
