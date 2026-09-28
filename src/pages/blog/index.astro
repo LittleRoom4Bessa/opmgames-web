@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import BlogIndex from "../../components/BlogIndex.astro";
 import { getPosts } from "../../lib/content";
 
-const posts = await getPosts();
+const posts = (await getPosts()).filter((p) => !p.data.translationOf);
 const allIds = posts.map((p) => p.id);
 ---
 

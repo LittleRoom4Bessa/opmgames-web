@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import { getPosts, getAlbums, formatDate } from "../lib/content";
 
-const posts = await getPosts();
+const posts = (await getPosts()).filter((p) => !p.data.translationOf);
 const albums = await getAlbums();
 
 // merge posts + albums by date, newest first
@@ -24,7 +24,7 @@ const latest = [
   .slice(0, 5);
 ---
 
-<Base title="Home" description="OPM is an independent game developer. Devlogs, essays, and photographs from a one-person studio.">
+<Base title="Home" description="OPM is a one-person studio. Devlogs, essays, and photographs.">
   <section class="page">
     <span class="crosshair" style="top:6vh;right:2vw" aria-hidden="true">+++</span>
     <p style="font-size:18px;line-height:1.75;color:#403c34;max-width:54ch;margin-bottom:5vh">
@@ -37,6 +37,7 @@ const latest = [
 
     <p class="kick" style="margin:11vh 0 16px"><b>/ LATEST</b> — FROM ALL DESKS</p>
     <div class="index">
+      {latest.length === 0 && <p class="empty">Nothing filed yet…</p>}
       {latest.map((item, i) => (
         <a class="row" href={item.href}>
           <span class="no">{String(i + 1).padStart(2, "0")}</span>

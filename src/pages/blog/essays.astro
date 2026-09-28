@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import BlogIndex from "../../components/BlogIndex.astro";
 import { getPosts } from "../../lib/content";
 
-const all = await getPosts();
+const all = (await getPosts()).filter((p) => !p.data.translationOf);
 const posts = all.filter((p) => p.data.category === "essay");
 ---
 
