@@ -1,13 +1,10 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: Astro (static, content collections), plain CSS design system, deployed to GitHub Pages via a protected `release` branch.
+  Bilingual site (en/zh): blog posts declare `lang`; translations use `translationOf`.
+  Editorial rule: no unearned claims — identity copy must be backed by shipped work.
+  Workflow: feature work on `dev`, owner reviews visually, merge to `main`, deploy via release PR (merge commit).
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
