@@ -1,6 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { getPosts, getAlbums, formatDate } from "../../lib/content";
+import { getPosts, getAlbums, formatDate, containsCjk } from "../../lib/content";
 
 export async function getStaticPaths() {
   const posts = (await getPosts()).filter((p) => !p.data.translationOf);
@@ -20,25 +20,32 @@ export async function getStaticPaths() {
 
 const { tag, posts, albums } = Astro.props;
 const rows = [
-  ...posts.map((p) => ({ title: p.data.title, href: `/blog/${p.id}/`, cat: p.data.category, date: p.data.pubDate })),
-  ...albums.map((a) => ({ title: a.data.title, href: `/fotos/${a.id}/`, cat: "Fotos", date: a.data.date })),
+  ...posts.map((p) => ({ title: p.data.title, href: `/blog/${p.id}/`, cat: p.data.category, date: p.data.pubDate, lang: p.data.lang })),
+  ...albums.map((a) => ({ title: a.data.title, href: `/fotos/${a.id}/`, cat: "Fotos", date: a.data.date, lang: containsCjk(a.data.title) ? "zh" as const : "en" as const })),
 ].sort((a, b) => b.date.getTime() - a.date.getTime());
+const hasCjk = rows.some((row) => row.lang === "zh" || containsCjk(row.title));
 ---
 
-<Base title={`#${tag}`} description={`Posts and albums tagged ${tag}.`}>
+<Base title={`#${tag}`} description={`Posts and albums tagged ${tag}.`} hasCjk={hasCjk}>
   <section class="page">
-    <p class="kick" style="margin-bottom:26px"><b>/ TAGS</b> — {tag.toUpperCase()}</p>
-    <h1 class="display" style="font-size:clamp(42px,5.4vw,80px)"><em>#{tag}</em></h1>
+    <p class="kick" style="margin-bottom:1.625rem"><b>/ TAGS</b> — {tag.toUpperCase()}</p>
+    <h1 class="display" style="font-size:clamp(2.625rem, 1.4rem + 3.4vw, 5rem)"><em>#{tag}</em></h1>
     <div class="index" style="margin-top:8vh">
       {rows.length === 0 && <p class="empty">Nothing filed yet…</p>}
-      {rows.map((row, i) => (
-        <a class="row" href={row.href}>
-          <span class="no">{String(i + 1).padStart(2, "0")}</span>
-          <span class="t">{row.title}</span>
-          <span class="cat">{row.cat}</span>
-          <span class="date">{formatDate(row.date)}</span>
-        </a>
-      ))}
+      {rows.length > 0 && (
+        <ul role="list">
+          {rows.map((row, i) => (
+            <li>
+              <a class="row" href={row.href}>
+                <span class="no">{String(i + 1).padStart(2, "0")}</span>
+                <span class="t" lang={row.lang === "zh" ? "zh" : undefined}>{row.title}</span>
+                <span class="cat">{row.cat}</span>
+                <span class="date">{formatDate(row.date)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   </section>
 </Base>
