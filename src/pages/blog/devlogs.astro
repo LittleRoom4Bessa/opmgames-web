@@ -1,14 +1,17 @@
 ---
 import Base from "../../layouts/Base.astro";
 import BlogIndex from "../../components/BlogIndex.astro";
-import { getPosts, getTranslationLangs } from "../../lib/content";
+import { getPosts, getTranslationLangs, containsCjk } from "../../lib/content";
 
 const all = (await getPosts()).filter((p) => !p.data.translationOf);
 const posts = all.filter((p) => p.data.category === "devlog");
 const translations = await getTranslationLangs();
+const hasCjk = posts.some(
+  (p) => p.data.lang === "zh" || containsCjk(p.data.title) || containsCjk(p.data.description)
+);
 ---
 
-<Base title="Devlogs" description="Devlogs — build notes from the workbench.">
+<Base title="Devlogs" description="Devlogs — build notes from the workbench." hasCjk={hasCjk}>
   <section class="page">
     <BlogIndex posts={posts} active="devlog" allIds={all.map((p) => p.id)} translations={translations} />
   </section>

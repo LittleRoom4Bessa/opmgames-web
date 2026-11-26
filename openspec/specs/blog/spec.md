@@ -45,7 +45,7 @@ Each original post SHALL carry a stable issue number displayed on index rows and
 
 ### Requirement: Translations
 
-A post MAY have translation entries: separate collection entries with `translationOf` set to the original's slug and a different `lang`. A translation SHALL have its own page at `/blog/<slug>` with `<html lang>` set accordingly, a `hreflang` alternate link, and a visible cross-language link to its sibling. Translations SHALL be excluded from index pages, tag pages, issue numbering, and prev/next navigation, and SHALL be included in the RSS feed.
+A post MAY have translation entries: separate collection entries with `translationOf` set to the original's slug and a different `lang`. A translation SHALL have its own page at `/blog/<slug>` with `<html lang>` set accordingly, a complete `hreflang` set on both versions (`en`, `zh`, and `x-default` pointing at the English URL), and a visible cross-language link to its sibling. Translations SHALL be excluded from index pages, tag pages, issue numbering, and prev/next navigation, and SHALL be included in the RSS feed. English index pages that list an original Chinese title or description SHALL mark that text `lang="zh"`.
 
 #### Scenario: Translation page exists but stays out of indexes
 
@@ -62,9 +62,19 @@ A post MAY have translation entries: separate collection entries with `translati
 - **WHEN** a post with a translation is listed on the blog index
 - **THEN** its row marks all available languages (e.g. `ZH · EN`)
 
+#### Scenario: Chinese title on an English index
+
+- **WHEN** an English index lists an original whose title or description is Chinese
+- **THEN** that title and description are marked `lang="zh"`
+
+#### Scenario: Article chrome matches the post language
+
+- **WHEN** a visitor opens a post with `lang: zh`
+- **THEN** the formatted date is `zh-CN`, and the dateline suffix and category label are Chinese
+
 ### Requirement: Post pages
 
-Each non-draft post SHALL have a page at `/blog/[slug]` rendering its content with `<html lang>` matching the post's `lang`, a header showing title, date, category, issue number, and tags, where each tag links to the unified tag page for that tag.
+Each non-draft post SHALL have a page at `/blog/[slug]` rendering its content with `<html lang>` matching the post's `lang`, a header showing title, date, category, issue number, and tags, where each tag links to the unified tag page for that tag. The date and the surrounding chrome (dateline, category label) SHALL use the post's language.
 
 #### Scenario: Post rendering
 

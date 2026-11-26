@@ -22,3 +22,5 @@ Personal site of OPM — Astro (static), deployed to GitHub Pages. Commands and 
 ## Tooling gotcha
 
 - obscura screenshots cannot render CJK (tofu boxes) and miscompute `calc()` with `ch` units — never judge zh layout or calc-heavy CSS from obscura output; ask the owner to eyeball.
+- iOS has no CJK serif: zh text must use the self-hosted Noto Serif SC (unicode-range slices in `public/fonts/noto-serif-sc/`, wired in `src/styles/noto-serif-sc.css`). Keep it in the CJK position of every font stack; do not reorder.
+- Files in `public/` get no content hash — bump the query version (`?v=N`) when replacing one (see `/favicon.svg?v=3`).

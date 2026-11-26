@@ -1,10 +1,14 @@
 ---
 import "../styles/global.css";
+import notoCss from "../styles/noto-serif-sc.css?url";
+import { ui, type Lang } from "../lib/ui";
 
 interface Props {
   title: string;
   description?: string;
-  lang?: string;
+  lang?: Lang;
+  /** Load Noto Serif SC. Default: true when lang is zh. Index pages pass this when they list CJK. */
+  hasCjk?: boolean;
   translation?: { href: string; lang: string };
   frontmatter?: { title: string; description?: string; lang?: string };
 }
@@ -13,19 +17,33 @@ const fp = Astro.props.frontmatter;
 const title = fp?.title ?? Astro.props.title;
 const description = fp?.description ?? Astro.props.description ?? "OPM — a one-person studio. Devlogs, essays, and photographs.";
 const pageTitle = title === "Home" ? "OPM Games" : `${title} — OPM Games`;
-const lang = fp?.lang ?? Astro.props.lang ?? "en";
+const lang = (fp?.lang ?? Astro.props.lang ?? "en") as Lang;
+const hasCjk = Astro.props.hasCjk ?? lang === "zh";
 const translation = Astro.props.translation;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const copy = ui(lang);
+
+// English URL is x-default. Both versions of a pair emit the full set.
+const enHref = translation
+  ? lang === "en"
+    ? canonicalURL
+    : new URL(translation.href, Astro.site)
+  : null;
+const zhHref = translation
+  ? lang === "zh"
+    ? canonicalURL
+    : new URL(translation.href, Astro.site)
+  : null;
 
 // current section from path → header label + dock active state
 const seg = Astro.url.pathname.split("/")[1] || "home";
 const section = ["blog", "fotos", "about", "tags"].includes(seg) ? seg : "home";
-const here = "/ " + section.toUpperCase();
+const here = "/ " + copy.section[section];
 const nav = [
-  { id: "home", label: "Home", href: "/" },
-  { id: "blog", label: "Blog", href: "/blog" },
-  { id: "fotos", label: "Fotos", href: "/fotos" },
-  { id: "about", label: "About", href: "/about" },
+  { id: "home", label: copy.nav.home, href: "/" },
+  { id: "blog", label: copy.nav.blog, href: "/blog" },
+  { id: "fotos", label: copy.nav.fotos, href: "/fotos" },
+  { id: "about", label: copy.nav.about, href: "/about" },
 ];
 ---
 
@@ -34,6 +52,8 @@ const nav = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="text-scale" content="scale" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#ffffff" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -44,7 +64,13 @@ const nav = [
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <link rel="alternate" type="application/rss+xml" title="OPM Games" href="/rss.xml" />
-    {translation && <link rel="alternate" hreflang={translation.lang} href={new URL(translation.href, Astro.site)} />}
+    {enHref && zhHref && (
+      <>
+        <link rel="alternate" hreflang="en" href={enHref} />
+        <link rel="alternate" hreflang="zh" href={zhHref} />
+        <link rel="alternate" hreflang="x-default" href={enHref} />
+      </>
+    )}
     {translation && (
       <script is:inline define:vars={{ translationHref: translation.href, pageLang: lang, targetLang: translation.lang }}>
         (function () {
@@ -61,40 +87,39 @@ const nav = [
         })();
       </script>
     )}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&family=Newsreader:ital,wght@0,400;1,400&family=Silkscreen:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    {hasCjk && <link rel="stylesheet" href={notoCss} />}
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">{copy.skip}</a>
     <div class="grain" aria-hidden="true"></div>
 
     <header class="site-head">
       <span class="here">{here}</span>
-      <a class="logo" href="/">OPM Games</a>
-      <span class="slot">Est. 2026</span>
+      <a class="logo" href="/" lang={lang === "zh" ? "en" : undefined}>OPM Games</a>
+      <span class="slot">{copy.est}</span>
     </header>
 
     <nav class="dock" aria-label="Site">
-      <a class="brand" href="/" style="writing-mode:vertical-rl">O.</a>
+      <a class="brand" href="/" style="writing-mode:vertical-rl" lang={lang === "zh" ? "en" : undefined}>O.</a>
       <div class="rule"></div>
-      {nav.map((item) => (
-        <a href={item.href} class={section === item.id ? "active" : ""} aria-current={section === item.id ? "page" : undefined}>
-          {item.label}
-        </a>
-      ))}
+      <ul role="list">
+        {nav.map((item) => (
+          <li>
+            <a href={item.href} class={section === item.id ? "active" : ""} aria-current={section === item.id ? "page" : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
     </nav>
 
-    <main class="page-frame" id="main">
+    <main class="page-frame" id="main" tabindex="-1">
       <slot />
     </main>
 
     <footer class="site-foot">
-      <span>© {new Date().getFullYear()} OPM Games</span>
-      <span><a href="/rss.xml">RSS</a> · Archivo × Newsreader × Times × Silkscreen</span>
+      <span lang={lang === "zh" ? "en" : undefined}>© {new Date().getFullYear()} OPM Games</span>
+      <span lang={lang === "zh" ? "en" : undefined}><a href="/rss.xml">RSS</a> · Archivo × Newsreader × Times × Silkscreen</span>
     </footer>
   </body>
 </html>

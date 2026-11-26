@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { getPosts, getAlbums, formatDate } from "../lib/content";
+import { getPosts, getAlbums, formatDate, containsCjk } from "../lib/content";
 
 const posts = (await getPosts()).filter((p) => !p.data.translationOf);
 const albums = await getAlbums();
@@ -12,40 +12,50 @@ const latest = [
     href: `/blog/${p.id}/`,
     cat: p.data.category,
     date: p.data.pubDate,
+    lang: p.data.lang,
   })),
   ...albums.map((a) => ({
     title: a.data.title,
     href: `/fotos/${a.id}/`,
     cat: "Fotos",
     date: a.data.date,
+    lang: "en" as const,
   })),
 ]
   .sort((a, b) => b.date.getTime() - a.date.getTime())
   .slice(0, 5);
+
+const hasCjk = latest.some((item) => item.lang === "zh" || containsCjk(item.title));
 ---
 
-<Base title="Home" description="OPM is a one-person studio. Devlogs, essays, and photographs.">
+<Base title="Home" description="OPM is a one-person studio. Devlogs, essays, and photographs." hasCjk={hasCjk}>
   <section class="page">
     <span class="crosshair" style="top:6vh;right:2vw" aria-hidden="true">+++</span>
-    <p style="font-size:18px;line-height:1.75;color:#403c34;max-width:54ch;margin-bottom:5vh">
+    <p style="font-size:1.125rem;line-height:1.75;color:#403c34;max-width:54ch;margin-bottom:5vh">
       Devlogs, essays, and photographs from a one-person studio. Nothing here is
       optimized for engagement; it is a workshop with the door left open.
     </p>
-    <h1 class="display" style="font-size:clamp(48px,7vw,104px)">
+    <h1 class="display" style="font-size:clamp(3rem, 1.25rem + 5vw, 6.5rem)">
       Making small<br /><span class="px">GAMES</span>, slowly,<br /><em>and writing about it.</em>
     </h1>
 
-    <p class="kick" style="margin:11vh 0 16px"><b>/ LATEST</b> — FROM ALL DESKS</p>
+    <p class="kick" style="margin:11vh 0 1rem"><b>/ LATEST</b> — FROM ALL DESKS</p>
     <div class="index">
       {latest.length === 0 && <p class="empty">Nothing filed yet…</p>}
-      {latest.map((item, i) => (
-        <a class="row" href={item.href}>
-          <span class="no">{String(i + 1).padStart(2, "0")}</span>
-          <span class="t">{item.title}</span>
-          <span class="cat">{item.cat}</span>
-          <span class="date">{formatDate(item.date)}</span>
-        </a>
-      ))}
+      {latest.length > 0 && (
+        <ul role="list">
+          {latest.map((item, i) => (
+            <li>
+              <a class="row" href={item.href}>
+                <span class="no">{String(i + 1).padStart(2, "0")}</span>
+                <span class="t" lang={item.lang === "zh" ? "zh" : undefined}>{item.title}</span>
+                <span class="cat">{item.cat}</span>
+                <span class="date">{formatDate(item.date)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
     <span class="crosshair" style="bottom:8vh;left:38vw" aria-hidden="true">+++</span>
   </section>

@@ -28,20 +28,25 @@ const langs = (post: CollectionEntry<"blog">) =>
 </div>
 
 <nav class="sections" aria-label="Blog sections">
-  <a href="/blog" class={active === "all" ? "on" : ""} aria-current={active === "all" ? "page" : undefined}>All</a>
-  <a href="/blog/devlogs" class={active === "devlog" ? "on" : ""} aria-current={active === "devlog" ? "page" : undefined}>Devlogs</a>
-  <a href="/blog/essays" class={active === "essay" ? "on" : ""} aria-current={active === "essay" ? "page" : undefined}>Essays</a>
+  <ul role="list">
+    <li><a href="/blog" class={active === "all" ? "on" : ""} aria-current={active === "all" ? "page" : undefined}>All</a></li>
+    <li><a href="/blog/devlogs" class={active === "devlog" ? "on" : ""} aria-current={active === "devlog" ? "page" : undefined}>Devlogs</a></li>
+    <li><a href="/blog/essays" class={active === "essay" ? "on" : ""} aria-current={active === "essay" ? "page" : undefined}>Essays</a></li>
+  </ul>
 </nav>
 
-<div>
-  {posts.length === 0 && <p class="srow-empty">Nothing filed yet…</p>}
-  {posts.map((post) => (
-    <a class="srow" href={`/blog/${post.id}/`}>
-      <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)} — {langs(post)}</span>
-      <div class="peek"><h3>{post.data.title}</h3></div>
-      <p class="deck">{post.data.description}</p>
-      <span class="dateline">{formatDate(post.data.pubDate)}</span>
-    </a>
-  ))}
-  <div style="border-top:1px solid var(--line)"></div>
-</div>
+{posts.length === 0 && <p class="srow-empty">Nothing filed yet…</p>}
+{posts.length > 0 && (
+  <ul class="stack" role="list">
+    {posts.map((post) => (
+      <li>
+        <a class="srow" href={`/blog/${post.id}/`}>
+          <span class="kicker"><b>{post.data.category}</b> — № {number(post.id)} — {langs(post)}</span>
+          <div class="peek"><h3 lang={post.data.lang === "zh" ? "zh" : undefined}>{post.data.title}</h3></div>
+          <p class="deck" lang={post.data.lang === "zh" ? "zh" : undefined}>{post.data.description}</p>
+          <span class="dateline">{formatDate(post.data.pubDate)}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
