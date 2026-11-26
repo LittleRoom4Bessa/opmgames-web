@@ -27,19 +27,32 @@ export async function getTranslationLangs(): Promise<Map<string, string[]>> {
   return map;
 }
 
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+export type Lang = 'en' | 'zh';
+
+const CJK = /[\u3400-\u9FFF]/;
+
+/** True when a string contains CJK unified ideographs (list titles, descriptions). */
+export function containsCjk(text: string): boolean {
+  return CJK.test(text);
+}
+
+function dateLocale(lang: Lang): string {
+  return lang === 'zh' ? 'zh-CN' : 'en-US';
+}
+
+export function formatDate(date: Date, lang: Lang = 'en'): string {
+  return date.toLocaleDateString(dateLocale(lang), {
     year: 'numeric',
-    month: 'short',
+    month: lang === 'zh' ? 'long' : 'short',
     day: 'numeric',
     timeZone: 'UTC',
   });
 }
 
-export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString('en-US', {
+export function formatMonthYear(date: Date, lang: Lang = 'en'): string {
+  return date.toLocaleDateString(dateLocale(lang), {
     year: 'numeric',
-    month: 'short',
+    month: lang === 'zh' ? 'long' : 'short',
     timeZone: 'UTC',
   });
 }

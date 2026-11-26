@@ -24,6 +24,11 @@ The homepage SHALL surface the most recent content — blog posts and gallery al
 - **WHEN** a visitor opens `/` and at least one non-draft post or album exists
 - **THEN** the latest entries are listed with title, content type, and date, linking to their pages
 
+#### Scenario: Chinese title on the English homepage
+
+- **WHEN** a latest entry's title is Chinese
+- **THEN** that title is marked `lang="zh"`
+
 #### Scenario: Empty state
 
 - **WHEN** no published content exists

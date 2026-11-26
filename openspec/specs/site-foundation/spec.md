@@ -22,12 +22,12 @@ The system SHALL be an Astro project producing a fully static build (`dist/`) wi
 
 ### Requirement: Base layout and navigation
 
-Every page SHALL render within a shared base layout containing a site header with navigation links to Home (`/`), Blog (`/blog`), Gallery (`/gallery`), and About (`/about`), and a site footer. All site UI text SHALL be in English.
+Every page SHALL render within a shared base layout containing a site header with navigation links to Home (`/`), Blog (`/blog`), Fotos (`/fotos`), and About (`/about`), and a site footer. Site chrome SHALL be English on pages whose language is English. On a page whose `lang` is `zh`, the skip link, navigation labels, section crumb, and establishment line SHALL be Chinese, and Latin brand names plus the typeface credit line SHALL be marked `lang="en"`.
 
 #### Scenario: Navigation present on all pages
 
 - **WHEN** any page of the site is rendered
-- **THEN** the header shows links to Home, Blog, Gallery, and About, and the current section is visually indicated
+- **THEN** the header shows links to Home, Blog, Fotos, and About, and the current section is visually indicated
 
 #### Scenario: Responsive layout
 

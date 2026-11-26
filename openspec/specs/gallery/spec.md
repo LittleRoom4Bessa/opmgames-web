@@ -26,7 +26,7 @@ Gallery albums SHALL be authored as content collection entries with a validated 
 
 ### Requirement: Album page with grid and lightbox
 
-Each album SHALL have a page at `/fotos/[slug]` rendering the album title, date, body text, linked tags, and a grid of its photos (each photo displaying its `alt` semantics and optional `caption`). Clicking a photo SHALL open a lightbox showing the full-size image; the lightbox closes via its close button, backdrop click, or Escape.
+Each album SHALL have a page at `/fotos/[slug]` rendering the album title, date, body text, linked tags, and a grid of its photos (each photo displaying its `alt` semantics and optional `caption`). Clicking a photo SHALL open a native modal `<dialog>` lightbox (`showModal()`) showing the full-size image. The lightbox closes via its close button, backdrop click, or Escape, and SHALL NOT lock scrolling by setting `overflow` on `html` or `body`.
 
 #### Scenario: Grid rendering
 
@@ -36,7 +36,12 @@ Each album SHALL have a page at `/fotos/[slug]` rendering the album title, date,
 #### Scenario: Lightbox focus management
 
 - **WHEN** a visitor opens the lightbox
-- **THEN** focus moves into the lightbox, Tab stays within it, and closing returns focus to the triggering photo
+- **THEN** focus moves into the native dialog, Tab stays within it, and closing returns focus to the triggering photo
+
+#### Scenario: Tag list language
+
+- **WHEN** an English tag page lists an original Chinese title
+- **THEN** that title is marked `lang="zh"`
 
 ### Requirement: Image optimization
 

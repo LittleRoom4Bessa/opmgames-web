@@ -1,6 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getAlbums, formatDate } from "../../lib/content";
+import { ui } from "../../lib/ui";
 import { Image } from "astro:assets";
 import { render } from "astro:content";
 
@@ -15,6 +16,7 @@ export async function getStaticPaths() {
 const { album, issue } = Astro.props;
 const { Content } = await render(album);
 const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
+const copy = ui("en");
 ---
 
 <Base title={album.data.title} description={album.data.description}>
@@ -25,7 +27,7 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
       <p class="sub">{album.data.description} · {formatDate(album.data.date)}</p>
       <figure class="album-hero">
         <Image src={album.data.cover} alt={album.data.title} widths={[720, 980, 1400]} sizes="(max-width: 980px) 92vw, 980px" loading="eager" fetchpriority="high" />
-        <figcaption><span>Featured — cover</span><span>{formatDate(album.data.date)}</span></figcaption>
+        <figcaption><span>{copy.featuredCover}</span><span>{formatDate(album.data.date)}</span></figcaption>
       </figure>
     </div>
 
@@ -36,7 +38,7 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
       <div class="photogrid">
         {album.data.photos.map((photo, i) => (
           <figure class={slots[i % slots.length]}>
-            <button type="button" data-lightbox={i} aria-label={`View ${photo.alt}`}>
+            <button type="button" data-lightbox={i} aria-label={copy.viewPhoto(photo.alt)}>
               <Image src={photo.src} alt={photo.alt} widths={[480, 720, 1080]} sizes="(max-width: 760px) 92vw, 50vw" loading="lazy" />
             </button>
             <figcaption>
@@ -50,23 +52,23 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
     </div>
   </section>
 
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
-    <button class="close" id="lightbox-close">Close ×</button>
+  <dialog id="lightbox" class="lightbox" closedby="any" aria-label={copy.photoViewer}>
+    <form method="dialog">
+      <button class="close" type="submit" autofocus>{copy.close}</button>
+    </form>
     <figure>
       <img id="lightbox-img" alt="" />
       <figcaption><span id="lightbox-alt"></span><span id="lightbox-count"></span></figcaption>
     </figure>
-  </div>
+  </dialog>
 
   <script>
-    const lb = document.getElementById("lightbox")!;
+    const lb = document.getElementById("lightbox") as HTMLDialogElement;
     const lbImg = document.getElementById("lightbox-img") as HTMLImageElement;
     const lbAlt = document.getElementById("lightbox-alt")!;
     const lbCount = document.getElementById("lightbox-count")!;
-    const lbClose = document.getElementById("lightbox-close") as HTMLButtonElement;
     const triggers = document.querySelectorAll<HTMLButtonElement>("[data-lightbox]");
     const total = triggers.length;
-    let lastTrigger: HTMLButtonElement | null = null;
 
     triggers.forEach((t) => {
       t.addEventListener("click", () => {
@@ -75,28 +77,27 @@ const slots = ["slot-a", "slot-b", "slot-c", "slot-d"];
         lbImg.alt = img.alt;
         lbAlt.textContent = img.alt;
         lbCount.textContent = `${Number(t.getAttribute("data-lightbox")) + 1} / ${total}`;
-        lastTrigger = t;
-        lb.classList.add("open");
-        document.body.style.overflow = "hidden";
-        lbClose.focus();
+        lb.showModal();
       });
     });
 
-    function close() {
-      lb.classList.remove("open");
-      document.body.style.overflow = "";
-      lastTrigger?.focus();
-      lastTrigger = null;
+    // closedby="any" is Limited availability (no Safari). Backdrop clicks need a
+    // manual close until HTMLDialogElement.closedBy exists. Test the pointer
+    // position, not event.target: the dialog is also the target for its own
+    // padding. Both the press and the release must land outside, so a
+    // text-selection drag that ends on the backdrop does not dismiss.
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      const outside = (e: PointerEvent) => {
+        const r = lb.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      lb.addEventListener("pointerdown", (e) => {
+        pressedOutside = outside(e);
+      });
+      lb.addEventListener("pointerup", (e) => {
+        if (pressedOutside && outside(e)) lb.close();
+      });
     }
-    lbClose.addEventListener("click", close);
-    lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
-
-    // minimal focus trap: keep Tab cycling between close button and dialog
-    lb.addEventListener("keydown", (e) => {
-      if (e.key !== "Tab" || !lb.classList.contains("open")) return;
-      e.preventDefault();
-      lbClose.focus();
-    });
   </script>
 </Base>
